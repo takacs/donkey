@@ -19,38 +19,39 @@ Here's the plan, we're going to store our data in a dedicated data directory at
 // setupPath uses XDG to create the necessary data dirs for the program.
 func setupPath() string {
 	// get XDG paths
-	scope := gap.NewScope(gap.User, "tasks")
+	scope := gap.NewScope(gap.User, "cards")
 	dirs, err := scope.DataDirs()
 	if err != nil {
 		log.Fatal(err)
 	}
 	// create the app base dir, if it doesn't exist
-	var taskDir string
+	var cardDir string
 	if len(dirs) > 0 {
-		taskDir = dirs[0]
+		cardDir = dirs[0]
 	} else {
-		taskDir, _ = os.UserHomeDir()
+		cardDir, _ = os.UserHomeDir()
 	}
-	if err := initTaskDir(taskDir); err != nil {
+	if err := initCardDir(cardDir); err != nil {
 		log.Fatal(err)
 	}
-	return taskDir
+	fmt.Println(cardDir)
+	return cardDir
 }
 
 // openDB opens a SQLite database and stores that database in our special spot.
-func openDB(path string) (*taskDB, error) {
-	db, err := sql.Open("sqlite3", filepath.Join(path, "tasks.db"))
+func openDB(path string) (*cardDB, error) {
+	db, err := sql.Open("sqlite3", filepath.Join(path, "cards.db"))
 	if err != nil {
 		return nil, err
 	}
-	t := taskDB{db, path}
-	if !t.tableExists("tasks") {
-		err := t.createTable()
+	c := cardDB{db, path}
+	if !c.tableExists("cards") {
+		err := c.createTable()
 		if err != nil {
 			return nil, err
 		}
 	}
-	return &t, nil
+	return &c, nil
 }
 
 func main() {

@@ -5,9 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	kancli "github.com/charmbracelet/kancli"
-
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
@@ -15,8 +12,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "tasks",
-	Short: "A CLI task management tool for ~slaying~ your to do list.",
+	Use:   "cards",
+	Short: "A CLI card management tool for ~slaying~ your to do list.",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
@@ -25,19 +22,19 @@ var rootCmd = &cobra.Command{
 
 var addCmd = &cobra.Command{
 	Use:   "add NAME",
-	Short: "Add a new task with an optional project name",
+	Short: "Add a new card with an optional project name",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		t, err := openDB(setupPath())
+		c, err := openDB(setupPath())
 		if err != nil {
 			return err
 		}
-		defer t.db.Close()
-		project, err := cmd.Flags().GetString("project")
+		defer c.db.Close()
+		deck, err := cmd.Flags().GetString("project")
 		if err != nil {
 			return err
 		}
-		if err := t.insert(args[0], project); err != nil {
+		if err := c.insert(args[0], args[0], deck); err != nil {
 			return err
 		}
 		return nil
@@ -46,7 +43,7 @@ var addCmd = &cobra.Command{
 
 var whereCmd = &cobra.Command{
 	Use:   "where",
-	Short: "Show where your tasks are stored",
+	Short: "Show where your cards are stored",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := fmt.Println(setupPath())
@@ -56,32 +53,32 @@ var whereCmd = &cobra.Command{
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete ID",
-	Short: "Delete a task by ID",
+	Short: "Delete a card by ID",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		t, err := openDB(setupPath())
+		c, err := openDB(setupPath())
 		if err != nil {
 			return err
 		}
-		defer t.db.Close()
+		defer c.db.Close()
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		return t.delete(uint(id))
+		return c.delete(uint(id))
 	},
 }
 
 var updateCmd = &cobra.Command{
 	Use:   "update ID",
-	Short: "Update a task by ID",
+	Short: "Update a card by ID",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		t, err := openDB(setupPath())
+		c, err := openDB(setupPath())
 		if err != nil {
 			return err
 		}
-		defer t.db.Close()
+		defer c.db.Close()
 		name, err := cmd.Flags().GetString("name")
 		if err != nil {
 			return err
@@ -98,6 +95,7 @@ var updateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		deck := "default"
 		var status string
 		switch prog {
 		case int(inProgress):
@@ -107,40 +105,41 @@ var updateCmd = &cobra.Command{
 		default:
 			status = todo.String()
 		}
-		newTask := task{uint(id), name, project, status, time.Time{}}
-		return t.update(newTask)
+		newcard := card{uint(id), name, project, status, deck, time.Time{}}
+		return c.update(newcard)
 	},
 }
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List all your tasks",
+	Short: "List all your cards",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		t, err := openDB(setupPath())
+		c, err := openDB(setupPath())
 		if err != nil {
 			return err
 		}
-		defer t.db.Close()
-		tasks, err := t.getTasks()
+		defer c.db.Close()
+		cards, err := c.getcards()
 		if err != nil {
 			return err
 		}
-		fmt.Print(setupTable(tasks))
+		fmt.Print(setupTable(cards))
 		return nil
 	},
 }
 
-func setupTable(tasks []task) *table.Table {
+func setupTable(cards []card) *table.Table {
 	columns := []string{"ID", "Name", "Project", "Status", "Created At"}
 	var rows [][]string
-	for _, task := range tasks {
+	for _, card := range cards {
 		rows = append(rows, []string{
-			fmt.Sprintf("%d", task.ID),
-			task.Name,
-			task.Project,
-			task.Status,
-			task.Created.Format("2006-01-02"),
+			fmt.Sprintf("%d", card.ID),
+			card.Front,
+			card.Back,
+			card.Deck,
+			card.Status,
+			card.Created.Format("2006-01-02"),
 		})
 	}
 	t := table.New().
@@ -166,43 +165,9 @@ func setupTable(tasks []task) *table.Table {
 	return t
 }
 
-var kanbanCmd = &cobra.Command{
-	Use:   "kanban",
-	Short: "Interact with your tasks in a Kanban board.",
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		t, err := openDB(setupPath())
-		if err != nil {
-			return err
-		}
-		defer t.db.Close()
-		todos, err := t.getTasksByStatus(todo.String())
-		if err != nil {
-			return err
-		}
-		ipr, err := t.getTasksByStatus(inProgress.String())
-		if err != nil {
-			return err
-		}
-		finished, err := t.getTasksByStatus(done.String())
-		if err != nil {
-			return err
-		}
-
-		todoCol := kancli.NewColumn(tasksToItems(todos), todo, true)
-		iprCol := kancli.NewColumn(tasksToItems(ipr), inProgress, false)
-		doneCol := kancli.NewColumn(tasksToItems(finished), done, false)
-		board := kancli.NewDefaultBoard([]kancli.Column{todoCol, iprCol, doneCol})
-		p := tea.NewProgram(board)
-		_, err = p.Run()
-		return err
-	},
-}
-
-// convert tasks to items for a list
-func tasksToItems(tasks []task) []list.Item {
+func cardsToItems(cards []card) []list.Item {
 	var items []list.Item
-	for _, t := range tasks {
+	for _, t := range cards {
 		items = append(items, t)
 	}
 	return items
@@ -213,7 +178,7 @@ func init() {
 		"project",
 		"p",
 		"",
-		"specify a project for your task",
+		"specify a project for your card",
 	)
 	rootCmd.AddCommand(addCmd)
 	rootCmd.AddCommand(listCmd)
@@ -221,22 +186,21 @@ func init() {
 		"name",
 		"n",
 		"",
-		"specify a name for your task",
+		"specify a name for your card",
 	)
 	updateCmd.Flags().StringP(
 		"project",
 		"p",
 		"",
-		"specify a project for your task",
+		"specify a project for your card",
 	)
 	updateCmd.Flags().IntP(
 		"status",
 		"s",
 		int(todo),
-		"specify a status for your task",
+		"specify a status for your card",
 	)
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(whereCmd)
 	rootCmd.AddCommand(deleteCmd)
-	rootCmd.AddCommand(kanbanCmd)
 }

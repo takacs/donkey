@@ -20,36 +20,27 @@ func (s status) String() string {
 	return [...]string{"todo", "in progress", "done"}[s]
 }
 
-/*
-A note on SQL statements:
-Make sure you're using parameterized SQL statements to avoid
-SQL injections. This format creates prepared statements at run time.
-learn more: https://go.dev/doc/database/sql-injection
-*/
-
-// note for reflect: only exported fields of a struct are settable.
-type task struct {
+type card struct {
 	ID      uint
-	Name    string
-	Project string
+	Front   string
+	Back    string
+	Deck    string
 	Status  string
 	Created time.Time
 }
 
-// implement list.Item & list.DefaultItem
-func (t task) FilterValue() string {
-	return t.Name
+func (c card) FilterValue() string {
+	return c.Front
 }
 
-func (t task) Title() string {
-	return t.Name
+func (c card) Title() string {
+	return c.Front
 }
 
-func (t task) Description() string {
-	return t.Project
+func (c card) Description() string {
+	return c.Back
 }
 
-// implement kancli.Status
 func (s status) Next() int {
 	if s == done {
 		return int(todo)
@@ -68,12 +59,12 @@ func (s status) Int() int {
 	return int(s)
 }
 
-type taskDB struct {
+type cardDB struct {
 	db      *sql.DB
 	dataDir string
 }
 
-func initTaskDir(path string) error {
+func initCardDir(path string) error {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			return os.Mkdir(path, 0o770)
@@ -83,57 +74,52 @@ func initTaskDir(path string) error {
 	return nil
 }
 
-func (t *taskDB) tableExists(name string) bool {
-	if _, err := t.db.Query("SELECT * FROM tasks"); err == nil {
+func (c *cardDB) tableExists(name string) bool {
+	if _, err := c.db.Query("SELECT * FROM cards"); err == nil {
 		return true
 	}
 	return false
 }
 
-func (t *taskDB) createTable() error {
-	_, err := t.db.Exec(`CREATE TABLE "tasks" ( "id" INTEGER, "name" TEXT NOT NULL, "project" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
+func (c *cardDB) createTable() error {
+	_, err := c.db.Exec(`CREATE TABLE "cards" ( "id" INTEGER, "front" TEXT NOT NULL, "back" TEXT, "deck" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
 	return err
 }
 
-func (t *taskDB) insert(name, project string) error {
-	// We don't care about the returned values, so we're using Exec. If we
-	// wanted to reuse these statements, it would be more efficient to use
-	// prepared statements. Learn more:
-	// https://go.dev/doc/database/prepared-statements
-	_, err := t.db.Exec(
-		"INSERT INTO tasks(name, project, status, created) VALUES( ?, ?, ?, ?)",
-		name,
-		project,
+func (c *cardDB) insert(front, back, deck string) error {
+	_, err := c.db.Exec(
+		"INSERT INTO cards(front, back, deck, status, created) VALUES( ?, ?, ?, ?, ?)",
+		front,
+		back,
+		deck,
 		todo.String(),
 		time.Now())
 	return err
 }
 
-func (t *taskDB) delete(id uint) error {
-	_, err := t.db.Exec("DELETE FROM tasks WHERE id = ?", id)
+func (c *cardDB) delete(id uint) error {
+	_, err := c.db.Exec("DELETE FROM cards WHERE id = ?", id)
 	return err
 }
 
-// Update the task in the db. Provide new values for the fields you want to
-// change, keep them empty if unchanged.
-func (t *taskDB) update(task task) error {
-	// Get the existing state of the task we want to update.
-	orig, err := t.getTask(task.ID)
+func (c *cardDB) update(card card) error {
+	// Get the existing state of the card we want to update.
+	orig, err := c.getcard(card.ID)
 	if err != nil {
 		return err
 	}
-	orig.merge(task)
-	_, err = t.db.Exec(
-		"UPDATE tasks SET name = ?, project = ?, status = ? WHERE id = ?",
-		orig.Name,
-		orig.Project,
+	orig.merge(card)
+	_, err = c.db.Exec(
+		"UPDATE cards SET name = ?, project = ?, deck = ?, status = ? WHERE id = ?",
+		orig.Front,
+		orig.Back,
+		orig.Deck,
 		orig.Status,
 		orig.ID)
 	return err
 }
 
-// merge the changed fields to the original task
-func (orig *task) merge(t task) {
+func (orig *card) merge(t card) {
 	uValues := reflect.ValueOf(&t).Elem()
 	oValues := reflect.ValueOf(orig).Elem()
 	for i := 0; i < uValues.NumField(); i++ {
@@ -149,61 +135,64 @@ func (orig *task) merge(t task) {
 	}
 }
 
-func (t *taskDB) getTasks() ([]task, error) {
-	var tasks []task
-	rows, err := t.db.Query("SELECT * FROM tasks")
+func (c *cardDB) getcards() ([]card, error) {
+	var cards []card
+	rows, err := c.db.Query("SELECT * FROM cards")
 	if err != nil {
-		return tasks, fmt.Errorf("unable to get values: %w", err)
+		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
 	for rows.Next() {
-		var task task
+		var card card
 		err = rows.Scan(
-			&task.ID,
-			&task.Name,
-			&task.Project,
-			&task.Status,
-			&task.Created,
+			&card.ID,
+			&card.Front,
+			&card.Back,
+			&card.Deck,
+			&card.Status,
+			&card.Created,
 		)
 		if err != nil {
-			return tasks, err
+			return cards, err
 		}
-		tasks = append(tasks, task)
+		cards = append(cards, card)
 	}
-	return tasks, err
+	return cards, err
 }
 
-func (t *taskDB) getTasksByStatus(status string) ([]task, error) {
-	var tasks []task
-	rows, err := t.db.Query("SELECT * FROM tasks WHERE status = ?", status)
+func (c *cardDB) getcardsByStatus(status string) ([]card, error) {
+	var cards []card
+	rows, err := c.db.Query("SELECT * FROM cards WHERE status = ?", status)
 	if err != nil {
-		return tasks, fmt.Errorf("unable to get values: %w", err)
+		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
 	for rows.Next() {
-		var task task
+		var card card
 		err = rows.Scan(
-			&task.ID,
-			&task.Name,
-			&task.Project,
-			&task.Status,
-			&task.Created,
+			&card.ID,
+			&card.Front,
+			&card.Back,
+			&card.Deck,
+			&card.Status,
+			&card.Created,
 		)
 		if err != nil {
-			return tasks, err
+			return cards, err
 		}
-		tasks = append(tasks, task)
+		cards = append(cards, card)
 	}
-	return tasks, err
+	return cards, err
 }
 
-func (t *taskDB) getTask(id uint) (task, error) {
-	var task task
-	err := t.db.QueryRow("SELECT * FROM tasks WHERE id = ?", id).
+func (c *cardDB) getcard(id uint) (card, error) {
+	var card card
+	err := c.db.QueryRow("SELECT * FROM cards WHERE id = ?", id).
 		Scan(
-			&task.ID,
-			&task.Name,
-			&task.Project,
-			&task.Status,
-			&task.Created,
+			&card.ID,
+			&card.Front,
+			&card.Back,
+			&card.Deck,
+			&card.Status,
+			&card.Created,
 		)
-	return task, err
+	return card, err
 }
