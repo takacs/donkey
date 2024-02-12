@@ -13,7 +13,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "cards",
-	Short: "A CLI card management tool for ~slaying~ your to do list.",
+	Short: "A CLI card management tool for anki style brain training.",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
@@ -21,8 +21,8 @@ var rootCmd = &cobra.Command{
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add NAME",
-	Short: "Add a new card with an optional project name",
+	Use:   "add Card",
+	Short: "Add a new card with an optional deck name",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := openDB(setupPath())
@@ -30,7 +30,7 @@ var addCmd = &cobra.Command{
 			return err
 		}
 		defer c.db.Close()
-		deck, err := cmd.Flags().GetString("project")
+		deck, err := cmd.Flags().GetString("deck")
 		if err != nil {
 			return err
 		}
@@ -130,7 +130,7 @@ var listCmd = &cobra.Command{
 }
 
 func setupTable(cards []card) *table.Table {
-	columns := []string{"ID", "Name", "Project", "Status", "Created At"}
+	columns := []string{"ID", "Front", "Back", "Deck", "Created At"}
 	var rows [][]string
 	for _, card := range cards {
 		rows = append(rows, []string{
