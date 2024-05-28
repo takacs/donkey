@@ -1,4 +1,4 @@
-module github.com/takacs/ankigo
+module github.com/takacs/donkey
 
 go 1.22.2
 
