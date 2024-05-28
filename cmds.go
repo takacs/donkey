@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add Card",
+	Use:   "add card",
 	Short: "Add a new card with an optional deck name",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -30,11 +30,19 @@ var addCmd = &cobra.Command{
 			return err
 		}
 		defer c.db.Close()
+		front, err := cmd.Flags().GetString("front")
+		if err != nil {
+			return err
+		}
+		back, err := cmd.Flags().GetString("back")
+		if err != nil {
+			return err
+		}
 		deck, err := cmd.Flags().GetString("deck")
 		if err != nil {
 			return err
 		}
-		if err := c.insert(args[0], args[0], deck); err != nil {
+		if err := c.insert(front, back, deck); err != nil {
 			return err
 		}
 		return nil
@@ -79,11 +87,15 @@ var updateCmd = &cobra.Command{
 			return err
 		}
 		defer c.db.Close()
-		name, err := cmd.Flags().GetString("name")
+		front, err := cmd.Flags().GetString("front")
 		if err != nil {
 			return err
 		}
-		project, err := cmd.Flags().GetString("project")
+		back, err := cmd.Flags().GetString("back")
+		if err != nil {
+			return err
+		}
+		deck, err := cmd.Flags().GetString("deck")
 		if err != nil {
 			return err
 		}
@@ -95,7 +107,6 @@ var updateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		deck := "default"
 		var status string
 		switch prog {
 		case int(inProgress):
@@ -105,7 +116,7 @@ var updateCmd = &cobra.Command{
 		default:
 			status = todo.String()
 		}
-		newcard := card{uint(id), name, project, status, deck, time.Time{}}
+		newcard := card{uint(id), front, back, deck, status, time.Time{}}
 		return c.update(newcard)
 	},
 }
@@ -175,31 +186,31 @@ func cardsToItems(cards []card) []list.Item {
 
 func init() {
 	addCmd.Flags().StringP(
-		"project",
-		"p",
+		"deck",
+		"d",
 		"",
-		"specify a project for your card",
+		"specify a deck for your card",
 	)
-	rootCmd.AddCommand(addCmd)
-	rootCmd.AddCommand(listCmd)
-	updateCmd.Flags().StringP(
-		"name",
-		"n",
+	addCmd.Flags().StringP(
+		"front",
+		"f",
 		"",
-		"specify a name for your card",
+		"specify the front for your card",
 	)
-	updateCmd.Flags().StringP(
-		"project",
-		"p",
+	addCmd.Flags().StringP(
+		"back",
+		"b",
 		"",
-		"specify a project for your card",
+		"specify the back for your card",
 	)
-	updateCmd.Flags().IntP(
+	addCmd.Flags().IntP(
 		"status",
 		"s",
 		int(todo),
 		"specify a status for your card",
 	)
+	rootCmd.AddCommand(addCmd)
+	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(whereCmd)
 	rootCmd.AddCommand(deleteCmd)
