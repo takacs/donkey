@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/spf13/cobra"
+	ddb "github.com/takacs/donkey/db"
 )
 
 var rootCmd = &cobra.Command{
@@ -25,11 +26,11 @@ var addCmd = &cobra.Command{
 	Short: "Add a new card with an optional deck name",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := openDB(setupPath())
+		c, err := ddb.OpenDb(setupPath())
 		if err != nil {
 			return err
 		}
-		defer c.db.Close()
+		defer c.Db.Close()
 		front, err := cmd.Flags().GetString("front")
 		if err != nil {
 			return err
@@ -42,7 +43,7 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if err := c.insert(front, back, deck); err != nil {
+		if err := c.Insert(front, back, deck); err != nil {
 			return err
 		}
 		return nil
@@ -64,16 +65,16 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete a card by ID",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := openDB(setupPath())
+		c, err := ddb.OpenDb(setupPath())
 		if err != nil {
 			return err
 		}
-		defer c.db.Close()
+		defer c.Db.Close()
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		return c.delete(uint(id))
+		return c.Delete(uint(id))
 	},
 }
 
@@ -82,11 +83,11 @@ var updateCmd = &cobra.Command{
 	Short: "Update a card by ID",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := openDB(setupPath())
+		c, err := ddb.OpenDb(setupPath())
 		if err != nil {
 			return err
 		}
-		defer c.db.Close()
+		defer c.Db.Close()
 		front, err := cmd.Flags().GetString("front")
 		if err != nil {
 			return err
@@ -99,25 +100,14 @@ var updateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		prog, err := cmd.Flags().GetInt("status")
-		if err != nil {
-			return err
-		}
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
 		var status string
-		switch prog {
-		case int(inProgress):
-			status = inProgress.String()
-		case int(done):
-			status = done.String()
-		default:
-			status = todo.String()
-		}
-		newcard := card{uint(id), front, back, deck, status, time.Time{}}
-		return c.update(newcard)
+		status = ddb.Todo.String()
+		newcard := ddb.Card{uint(id), front, back, deck, status, time.Time{}}
+		return c.Update(newcard)
 	},
 }
 
@@ -126,12 +116,12 @@ var listCmd = &cobra.Command{
 	Short: "List all your cards",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := openDB(setupPath())
+		c, err := ddb.OpenDb(setupPath())
 		if err != nil {
 			return err
 		}
-		defer c.db.Close()
-		cards, err := c.getcards()
+		defer c.Db.Close()
+		cards, err := c.Getcards()
 		if err != nil {
 			return err
 		}
@@ -140,7 +130,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func setupTable(cards []card) *table.Table {
+func setupTable(cards []ddb.Card) *table.Table {
 	columns := []string{"ID", "Front", "Back", "Deck", "Created At"}
 	var rows [][]string
 	for _, card := range cards {
@@ -176,7 +166,7 @@ func setupTable(cards []card) *table.Table {
 	return t
 }
 
-func cardsToItems(cards []card) []list.Item {
+func cardsToItems(cards []ddb.Card) []list.Item {
 	var items []list.Item
 	for _, t := range cards {
 		items = append(items, t)
@@ -206,7 +196,7 @@ func init() {
 	addCmd.Flags().IntP(
 		"status",
 		"s",
-		int(todo),
+		int(ddb.Todo),
 		"specify a status for your card",
 	)
 	rootCmd.AddCommand(addCmd)

@@ -1,26 +1,26 @@
-package main
+package db
 
 import (
 	"database/sql"
 	"fmt"
-	"os"
+	"path/filepath"
 	"reflect"
 	"time"
 )
 
-type status int
+type Status int
 
 const (
-	todo status = iota
-	inProgress
-	done
+	Todo Status = iota
+	InProgress
+	Done
 )
 
-func (s status) String() string {
+func (s Status) String() string {
 	return [...]string{"todo", "in progress", "done"}[s]
 }
 
-type card struct {
+type Card struct {
 	ID      uint
 	Front   string
 	Back    string
@@ -29,87 +29,63 @@ type card struct {
 	Created time.Time
 }
 
-func (c card) FilterValue() string {
+func (c Card) FilterValue() string {
 	return c.Front
 }
 
-func (c card) Title() string {
+func (c Card) Title() string {
 	return c.Front
 }
 
-func (c card) Description() string {
+func (c Card) Description() string {
 	return c.Back
 }
 
-func (s status) Next() int {
-	if s == done {
-		return int(todo)
-	}
-	return int(s + 1)
-}
-
-func (s status) Prev() int {
-	if s == todo {
-		return int(done)
-	}
-	return int(s - 1)
-}
-
-func (s status) Int() int {
+func (s Status) Int() int {
 	return int(s)
 }
 
-type cardDB struct {
-	db      *sql.DB
+type CardDB struct {
+	Db      *sql.DB
 	dataDir string
 }
 
-func initCardDir(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return os.Mkdir(path, 0o770)
-		}
-		return err
-	}
-	return nil
-}
-
-func (c *cardDB) tableExists(name string) bool {
-	if _, err := c.db.Query("SELECT * FROM cards"); err == nil {
+func (c *CardDB) TableExists(name string) bool {
+	if _, err := c.Db.Query("SELECT * FROM cards"); err == nil {
 		return true
 	}
 	return false
 }
 
-func (c *cardDB) createTable() error {
-	_, err := c.db.Exec(`CREATE TABLE "cards" ( "id" INTEGER, "front" TEXT NOT NULL, "back" TEXT, "deck" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
+func (c *CardDB) CreateTable() error {
+	_, err := c.Db.Exec(`CREATE TABLE "cards" ( "id" INTEGER, "front" TEXT NOT NULL, "back" TEXT, "deck" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
 	return err
 }
 
-func (c *cardDB) insert(front, back, deck string) error {
-	_, err := c.db.Exec(
+func (c *CardDB) Insert(front, back, deck string) error {
+	_, err := c.Db.Exec(
 		"INSERT INTO cards(front, back, deck, status, created) VALUES( ?, ?, ?, ?, ?)",
 		front,
 		back,
 		deck,
-		todo.String(),
+		Todo.String(),
 		time.Now())
 	return err
 }
 
-func (c *cardDB) delete(id uint) error {
-	_, err := c.db.Exec("DELETE FROM cards WHERE id = ?", id)
+func (c *CardDB) Delete(id uint) error {
+	_, err := c.Db.Exec("DELETE FROM cards WHERE id = ?", id)
 	return err
 }
 
-func (c *cardDB) update(card card) error {
+func (c *CardDB) Update(card Card) error {
 	// Get the existing state of the card we want to update.
-	orig, err := c.getcard(card.ID)
+	orig, err := c.Getcard(card.ID)
 	if err != nil {
 		return err
 	}
 	orig.merge(card)
-	_, err = c.db.Exec(
+	_, err = c.Db.Exec(
 		"UPDATE cards SET name = ?, project = ?, deck = ?, status = ? WHERE id = ?",
 		orig.Front,
 		orig.Back,
@@ -119,7 +95,7 @@ func (c *cardDB) update(card card) error {
 	return err
 }
 
-func (orig *card) merge(t card) {
+func (orig *Card) merge(t Card) {
 	uValues := reflect.ValueOf(&t).Elem()
 	oValues := reflect.ValueOf(orig).Elem()
 	for i := 0; i < uValues.NumField(); i++ {
@@ -135,14 +111,14 @@ func (orig *card) merge(t card) {
 	}
 }
 
-func (c *cardDB) getcards() ([]card, error) {
-	var cards []card
-	rows, err := c.db.Query("SELECT * FROM cards")
+func (c *CardDB) Getcards() ([]Card, error) {
+	var cards []Card
+	rows, err := c.Db.Query("SELECT * FROM cards")
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
 	for rows.Next() {
-		var card card
+		var card Card
 		err = rows.Scan(
 			&card.ID,
 			&card.Front,
@@ -159,14 +135,14 @@ func (c *cardDB) getcards() ([]card, error) {
 	return cards, err
 }
 
-func (c *cardDB) getcardsByStatus(status string) ([]card, error) {
-	var cards []card
-	rows, err := c.db.Query("SELECT * FROM cards WHERE status = ?", status)
+func (c *CardDB) GetcardsByStatus(status string) ([]Card, error) {
+	var cards []Card
+	rows, err := c.Db.Query("SELECT * FROM cards WHERE status = ?", status)
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
 	for rows.Next() {
-		var card card
+		var card Card
 		err = rows.Scan(
 			&card.ID,
 			&card.Front,
@@ -183,9 +159,9 @@ func (c *cardDB) getcardsByStatus(status string) ([]card, error) {
 	return cards, err
 }
 
-func (c *cardDB) getcard(id uint) (card, error) {
-	var card card
-	err := c.db.QueryRow("SELECT * FROM cards WHERE id = ?", id).
+func (c *CardDB) Getcard(id uint) (Card, error) {
+	var card Card
+	err := c.Db.QueryRow("SELECT * FROM cards WHERE id = ?", id).
 		Scan(
 			&card.ID,
 			&card.Front,
@@ -195,4 +171,19 @@ func (c *cardDB) getcard(id uint) (card, error) {
 			&card.Created,
 		)
 	return card, err
+}
+
+func OpenDb(path string) (*CardDB, error) {
+	Db, err := sql.Open("sqlite3", filepath.Join(path, "cards.Db"))
+	if err != nil {
+		return nil, err
+	}
+	c := CardDB{Db, path}
+	if !c.TableExists("cards") {
+		err := c.CreateTable()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &c, nil
 }

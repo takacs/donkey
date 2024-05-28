@@ -1,11 +1,9 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
 	gap "github.com/muesli/go-app-paths"
@@ -38,22 +36,15 @@ func setupPath() string {
 	return cardDir
 }
 
-// openDB opens a SQLite database and stores that database in our special spot.
-func openDB(path string) (*cardDB, error) {
-	db, err := sql.Open("sqlite3", filepath.Join(path, "cards.db"))
-	if err != nil {
-		return nil, err
-	}
-	c := cardDB{db, path}
-	if !c.tableExists("cards") {
-		err := c.createTable()
-		if err != nil {
-			return nil, err
+func initCardDir(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return os.Mkdir(path, 0o770)
 		}
+		return err
 	}
-	return &c, nil
+	return nil
 }
-
 func main() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
