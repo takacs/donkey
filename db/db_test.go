@@ -11,73 +11,74 @@ import (
 
 func TestDelete(t *testing.T) {
 	tests := []struct {
-		want task
+		want Card
 	}{
 		{
-			want: task{
-				ID:      1,
-				Name:    "get milk",
-				Project: "groceries",
-				Status:  "todo",
+			want: Card{
+				ID:     1,
+				Front:  "anki",
+				Back:   "Anki is a program which makes remembering things easy.",
+				Deck:   "default",
+				Status: "todo",
 			},
 		},
 	}
 	for _, tc := range tests {
-		t.Run(tc.want.Name, func(t *testing.T) {
+		t.Run(tc.want.Front, func(t *testing.T) {
 			tDB := setup()
 			defer teardown(tDB)
-			if err := tDB.insert(tc.want.Name, tc.want.Project); err != nil {
-				t.Fatalf("unable to insert tasks: %v", err)
+			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
+				t.Fatalf("unable to insert cards: %v", err)
 			}
-			tasks, err := tDB.getTasks()
+			cards, err := tDB.Getcards()
 			if err != nil {
-				t.Fatalf("unable to get tasks: %v", err)
+				t.Fatalf("unable to get cards: %v", err)
 			}
-			tc.want.Created = tasks[0].Created
-			if !reflect.DeepEqual(tc.want, tasks[0]) {
-				t.Fatalf("got %v, want %v", tc.want, tasks)
+			tc.want.Created = cards[0].Created
+			if !reflect.DeepEqual(tc.want, cards[0]) {
+				t.Fatalf("got %v, want %v", tc.want, cards)
 			}
-			if err := tDB.delete(1); err != nil {
-				t.Fatalf("unable to delete tasks: %v", err)
+			if err := tDB.Delete(1); err != nil {
+				t.Fatalf("unable to delete cards: %v", err)
 			}
-			tasks, err = tDB.getTasks()
+			cards, err = tDB.Getcards()
 			if err != nil {
-				t.Fatalf("unable to get tasks: %v", err)
+				t.Fatalf("unable to get cards: %v", err)
 			}
-			if len(tasks) != 0 {
-				t.Fatalf("expected tasks to be empty, got: %v", tasks)
+			if len(cards) != 0 {
+				t.Fatalf("expected cards to be empty, got: %v", cards)
 			}
 		})
 	}
 }
 
-func TestGetTask(t *testing.T) {
+func TestGetcard(t *testing.T) {
 	tests := []struct {
-		want task
+		want Card
 	}{
 		{
-			want: task{
-				ID:      1,
-				Name:    "get milk",
-				Project: "groceries",
-				Status:  todo.String(),
+			want: Card{
+				ID:     1,
+				Front:  "get milk",
+				Back:   "groceries",
+				Status: Todo.String(),
 			},
 		},
 	}
 	for _, tc := range tests {
-		t.Run(tc.want.Name, func(t *testing.T) {
+		t.Run(tc.want.Front, func(t *testing.T) {
 			tDB := setup()
 			defer teardown(tDB)
-			if err := tDB.insert(tc.want.Name, tc.want.Project); err != nil {
+			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			task, err := tDB.getTask(tc.want.ID)
+			Card, err := tDB.Getcard(tc.want.ID)
 			if err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			tc.want.Created = task.Created
-			if !reflect.DeepEqual(task, tc.want) {
-				t.Fatalf("got: %#v, want: %#v", task, tc.want)
+			tc.want.Created = Card.Created
+			if !reflect.DeepEqual(Card, tc.want) {
+				t.Fatalf("got: %#v, want: %#v", Card, tc.want)
 			}
 		})
 	}
@@ -85,48 +86,51 @@ func TestGetTask(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	tests := []struct {
-		new  *task
-		old  *task
-		want task
+		new  *Card
+		old  *Card
+		want Card
 	}{
 		{
-			new: &task{
-				ID:      1,
-				Name:    "strawberries",
-				Project: "",
-				Status:  "",
+			new: &Card{
+				ID:     1,
+				Front:  "bubbletea",
+				Back:   "",
+				Deck:   "",
+				Status: "",
 			},
-			old: &task{
-				ID:      1,
-				Name:    "get milk",
-				Project: "groceries",
-				Status:  todo.String(),
+			old: &Card{
+				ID:     1,
+				Front:  "charm",
+				Back:   "A library that helps you create TUIs",
+				Deck:   "default",
+				Status: Todo.String(),
 			},
-			want: task{
-				ID:      1,
-				Name:    "strawberries",
-				Project: "groceries",
-				Status:  todo.String(),
+			want: Card{
+				ID:     1,
+				Front:  "bubbletea",
+				Back:   "A library that helps you create TUIs",
+				Deck:   "default",
+				Status: Todo.String(),
 			},
 		},
 	}
 	for _, tc := range tests {
-		t.Run(tc.new.Name, func(t *testing.T) {
+		t.Run(tc.new.Front, func(t *testing.T) {
 			tDB := setup()
 			defer teardown(tDB)
-			if err := tDB.insert(tc.old.Name, tc.old.Project); err != nil {
+			if err := tDB.Insert(tc.old.Front, tc.old.Back, tc.old.Deck); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			if err := tDB.update(*tc.new); err != nil {
+			if err := tDB.Update(*tc.new); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			task, err := tDB.getTask(tc.want.ID)
+			Card, err := tDB.Getcard(tc.want.ID)
 			if err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			tc.want.Created = task.Created
-			if !reflect.DeepEqual(task, tc.want) {
-				t.Fatalf("got: %#v, want: %#v", task, tc.want)
+			tc.want.Created = Card.Created
+			if !reflect.DeepEqual(Card, tc.want) {
+				t.Fatalf("got: %#v, want: %#v", Card, tc.want)
 			}
 		})
 	}
@@ -134,28 +138,28 @@ func TestUpdate(t *testing.T) {
 
 func TestMerge(t *testing.T) {
 	tests := []struct {
-		new  task
-		old  task
-		want task
+		new  Card
+		old  Card
+		want Card
 	}{
 		{
-			new: task{
-				ID:      1,
-				Name:    "strawberries",
-				Project: "",
-				Status:  "",
+			new: Card{
+				ID:     1,
+				Front:  "strawberries",
+				Back:   "",
+				Status: "",
 			},
-			old: task{
-				ID:      1,
-				Name:    "get milk",
-				Project: "groceries",
-				Status:  todo.String(),
+			old: Card{
+				ID:     1,
+				Front:  "get milk",
+				Back:   "groceries",
+				Status: Todo.String(),
 			},
-			want: task{
-				ID:      1,
-				Name:    "strawberries",
-				Project: "groceries",
-				Status:  todo.String(),
+			want: Card{
+				ID:     1,
+				Front:  "strawberries",
+				Back:   "groceries",
+				Status: Todo.String(),
 			},
 		},
 	}
@@ -167,50 +171,51 @@ func TestMerge(t *testing.T) {
 	}
 }
 
-func TestGetTasksByStatus(t *testing.T) {
+func TestGetcardsByStatus(t *testing.T) {
 	tests := []struct {
-		want task
+		want Card
 	}{
 		{
-			want: task{
-				ID:      1,
-				Name:    "get milk",
-				Project: "groceries",
-				Status:  todo.String(),
+			want: Card{
+				ID:     1,
+				Front:  "get milk",
+				Back:   "groceries",
+				Deck:   "default",
+				Status: Todo.String(),
 			},
 		},
 	}
 	for _, tc := range tests {
-		t.Run(tc.want.Name, func(t *testing.T) {
+		t.Run(tc.want.Front, func(t *testing.T) {
 			tDB := setup()
 			defer teardown(tDB)
-			if err := tDB.insert(tc.want.Name, tc.want.Project); err != nil {
+			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			tasks, err := tDB.getTasksByStatus(tc.want.Status)
+			Cards, err := tDB.GetcardsByStatus(tc.want.Status)
 			if err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			if len(tasks) < 1 {
-				t.Fatalf("expected 1 value, got %#v", tasks)
+			if len(Cards) < 1 {
+				t.Fatalf("expected 1 value, got %#v", Cards)
 			}
-			tc.want.Created = tasks[0].Created
-			if !reflect.DeepEqual(tasks[0], tc.want) {
-				t.Fatalf("got: %#v, want: %#v", tasks, tc.want)
+			tc.want.Created = Cards[0].Created
+			if !reflect.DeepEqual(Cards[0], tc.want) {
+				t.Fatalf("got: %#v, want: %#v", Cards, tc.want)
 			}
 		})
 	}
 }
 
-func setup() *taskDB {
+func setup() *CardDB {
 	path := filepath.Join(os.TempDir(), "test.db")
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	t := taskDB{db, path}
-	if !t.tableExists("tasks") {
-		err := t.createTable()
+	t := CardDB{db, path}
+	if !t.TableExists("cards") {
+		err := t.CreateTable()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -218,7 +223,7 @@ func setup() *taskDB {
 	return &t
 }
 
-func teardown(tDB *taskDB) {
-	tDB.db.Close()
+func teardown(tDB *CardDB) {
+	tDB.Db.Close()
 	os.Remove(tDB.dataDir)
 }
