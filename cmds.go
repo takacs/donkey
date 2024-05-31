@@ -104,8 +104,7 @@ var updateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		var status string
-		status = ddb.Todo.String()
+		status := ddb.Todo.String()
 		newcard := ddb.Card{uint(id), front, back, deck, status, time.Time{}}
 		return c.Update(newcard)
 	},
@@ -164,14 +163,6 @@ func setupTable(cards []ddb.Card) *table.Table {
 			return lipgloss.NewStyle()
 		})
 	return t
-}
-
-func cardsToItems(cards []ddb.Card) []list.Item {
-	var items []list.Item
-	for _, t := range cards {
-		items = append(items, t)
-	}
-	return items
 }
 
 func init() {
