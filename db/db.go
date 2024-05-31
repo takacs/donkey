@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/mattn/go-sqlite3"
 	"path/filepath"
 	"reflect"
 	"time"
@@ -79,14 +80,13 @@ func (c *CardDB) Delete(id uint) error {
 }
 
 func (c *CardDB) Update(card Card) error {
-	// Get the existing state of the card we want to update.
 	orig, err := c.Getcard(card.ID)
 	if err != nil {
 		return err
 	}
 	orig.merge(card)
 	_, err = c.Db.Exec(
-		"UPDATE cards SET name = ?, project = ?, deck = ?, status = ? WHERE id = ?",
+		"UPDATE cards SET front = ?, back = ?, deck = ?, status = ? WHERE id = ?",
 		orig.Front,
 		orig.Back,
 		orig.Deck,
@@ -174,11 +174,11 @@ func (c *CardDB) Getcard(id uint) (Card, error) {
 }
 
 func OpenDb(path string) (*CardDB, error) {
-	Db, err := sql.Open("sqlite3", filepath.Join(path, "cards.Db"))
+	db, err := sql.Open("sqlite3", filepath.Join(path, "cards.db"))
 	if err != nil {
 		return nil, err
 	}
-	c := CardDB{Db, path}
+	c := CardDB{db, path}
 	if !c.TableExists("cards") {
 		err := c.CreateTable()
 		if err != nil {
