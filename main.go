@@ -39,7 +39,7 @@ func setupPath() string {
 func initCardDir(path string) error {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
-			return os.Mkdir(path, 0o770)
+			return os.Mkdir(path, 0o750)
 		}
 		return err
 	}
