@@ -45,6 +45,7 @@ func initCardDir(path string) error {
 	}
 	return nil
 }
+
 func main() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

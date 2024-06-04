@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/spf13/cobra"
 	ddb "github.com/takacs/donkey/db"
+	tui "github.com/takacs/donkey/tui"
 )
 
 var rootCmd = &cobra.Command{
@@ -164,6 +165,17 @@ func setupTable(cards []ddb.Card) *table.Table {
 	return t
 }
 
+var appCmd = &cobra.Command{
+	Use:   "app",
+	Short: "Launch Donkey app.",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println("This is the donkey app running.")
+		tui.StartTea()
+		return nil
+	},
+}
+
 func init() {
 	addCmd.Flags().StringP(
 		"deck",
@@ -194,4 +206,5 @@ func init() {
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(whereCmd)
 	rootCmd.AddCommand(deleteCmd)
+	rootCmd.AddCommand(appCmd)
 }
