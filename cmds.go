@@ -171,7 +171,10 @@ var appCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("This is the donkey app running.")
-		tui.StartTea()
+		err := tui.StartTea()
+		if err != nil {
+			fmt.Println("failed to start donkey")
+		}
 		return nil
 	},
 }
