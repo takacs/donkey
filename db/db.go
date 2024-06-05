@@ -2,8 +2,12 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	gap "github.com/muesli/go-app-paths"
+	"log"
+	"os"
 	"path/filepath"
 	"reflect"
 	"time"
@@ -186,4 +190,36 @@ func OpenDb(path string) (*CardDB, error) {
 		}
 	}
 	return &c, nil
+}
+
+func GetDbPath(app string) (string, error) {
+	scope := gap.NewScope(gap.User, app)
+	dirs, err := scope.DataDirs()
+	if err != nil {
+		log.Fatal(err)
+		return "", errors.New("cant get datadir")
+	}
+	// create the app base dir, if it doesn't exist
+	var cardDir string
+	if len(dirs) > 0 {
+		cardDir = dirs[0]
+	} else {
+		cardDir, _ = os.UserHomeDir()
+	}
+	if err := initCardDir(cardDir); err != nil {
+		log.Fatal(err)
+		return "", errors.New("cant init datadir")
+	}
+	fmt.Println(cardDir)
+	return cardDir, nil
+}
+
+func initCardDir(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return os.Mkdir(path, 0o750)
+		}
+		return err
+	}
+	return nil
 }
