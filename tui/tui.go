@@ -6,6 +6,7 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/takacs/donkey/db"
 )
 
 func StartTea() error {
@@ -20,7 +21,11 @@ func StartTea() error {
 			}
 		}()
 	}
-	m, _ := InitProject() // TODO: can we acknowledge this error
+	path, err := db.GetDbPath("cards")
+	if err != nil {
+		fmt.Println("couldn't get db path")
+	}
+	m, _ := InitProject(path) // TODO: can we acknowledge this error
 	program := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := program.Run(); err != nil {
 		fmt.Println("Error running program:", err)

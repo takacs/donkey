@@ -4,14 +4,23 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	db "github.com/takacs/donkey/db"
 )
 
 type Model struct {
-	text string
+	cards []db.Card
 }
 
-func InitProject() (tea.Model, tea.Cmd) {
-	m := Model{text: "hello, tea"}
+func InitProject(path string) (tea.Model, tea.Cmd) {
+	db, err := db.OpenDb(path)
+	if err != nil {
+		fmt.Println("issue opening db")
+	}
+	cards, err := db.Getcards()
+	if err != nil {
+		fmt.Println("issue loading cards from db")
+	}
+	m := Model{cards: cards}
 	return m, func() tea.Msg { return "hi" }
 }
 
@@ -33,5 +42,5 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return m.text
+	return m.cards[0].Front
 }
