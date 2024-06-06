@@ -69,9 +69,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-			return m, tea.Batch(
-				tea.Printf("Let's go to %s!", m.table.SelectedRow()[1]),
+			cmd := tea.Batch(
+				tea.Printf("Let's go to %s!", m.table.SelectedRow()),
 			)
+			switch m.table.SelectedRow()[0] {
+			case "Add Card":
+				return AddCardModel{name: "add card"}, cmd
+			case "List Cards":
+				return ListCardsModel{name: "list cards"}, cmd
+			case "Play":
+				return PlayModel{name: "play"}, cmd
+			case "Stats":
+				return StatsModel{name: "stats"}, cmd
+			}
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
