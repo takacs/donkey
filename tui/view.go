@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
@@ -27,17 +25,14 @@ func (m Model) Init() tea.Cmd {
 
 func createTable() table.Model {
 	columns := []table.Column{
-		{Title: "Rank", Width: 4},
-		{Title: "City", Width: 10},
-		{Title: "Country", Width: 10},
-		{Title: "Population", Width: 10},
+		{Title: "Main Menu", Width: 20},
 	}
 
 	rows := []table.Row{
-		{"1", "Tokyo", "Japan", "37,274,000"},
-		{"2", "Delhi", "India", "32,065,760"},
-		{"3", "Shanghai", "China", "28,516,904"},
-		{"4", "Dhaka", "Bangladesh", "22,478,116"},
+		{"Add Card"},
+		{"List Cards"},
+		{"Play"},
+		{"Stats"},
 	}
 	t := table.New(
 		table.WithColumns(columns),
@@ -61,16 +56,26 @@ func createTable() table.Model {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch {
-		default:
-			fmt.Printf("default press quit %v \n", msg)
+		switch msg.String() {
+		case "esc":
+			if m.table.Focused() {
+				m.table.Blur()
+			} else {
+				m.table.Focus()
+			}
+		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "enter":
+			return m, tea.Batch(
+				tea.Printf("Let's go to %s!", m.table.SelectedRow()[1]),
+			)
 		}
 	}
-	return m, tea.Batch(cmds...)
+	m.table, cmd = m.table.Update(msg)
+	return m, cmd
 }
 
 func (m Model) View() string {
