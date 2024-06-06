@@ -12,15 +12,7 @@ type Model struct {
 }
 
 func InitProject(path string) (tea.Model, tea.Cmd) {
-	db, err := db.OpenDb(path)
-	if err != nil {
-		fmt.Println("issue opening db")
-	}
-	cards, err := db.Getcards()
-	if err != nil {
-		fmt.Println("issue loading cards from db")
-	}
-	m := Model{cards: cards}
+	m := StatsModel{name: "stats"}
 	return m, func() tea.Msg { return "hi" }
 }
 
