@@ -13,10 +13,10 @@ import (
 )
 
 type ListCardsModel struct {
-	keys        keyMap
-	help        help.Model
-	cards_table table.Model
-	name        string
+	keys       keyMap
+	help       help.Model
+	cardsTable table.Model
+	name       string
 }
 
 func (m ListCardsModel) Init() tea.Cmd {
@@ -45,7 +45,7 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ListCardsModel) View() string {
 	helpView := m.help.View(m.keys)
 
-	return baseStyle.Render(m.cards_table.View()) + "\n" + helpView
+	return baseStyle.Render(m.cardsTable.View()) + "\n" + helpView
 }
 
 func newListCardsModel() ListCardsModel {
@@ -55,10 +55,10 @@ func newListCardsModel() ListCardsModel {
 	}
 
 	return ListCardsModel{
-		name:        "list_cards",
-		help:        help.New(),
-		keys:        keys,
-		cards_table: table,
+		name:       "list_cards",
+		help:       help.New(),
+		keys:       keys,
+		cardsTable: table,
 	}
 }
 
