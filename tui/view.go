@@ -74,11 +74,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 			switch m.table.SelectedRow()[0] {
 			case "Add Card":
-				return AddCardModel{name: "add card"}, cmd
+				return newAddCardModel(), cmd
 			case "List Cards":
 				return ListCardsModel{name: "list cards"}, cmd
 			case "Play":
-				return PlayModel{name: "play"}, cmd
+				return newPlayModel(), cmd
 			case "Stats":
 				return StatsModel{name: "stats"}, cmd
 			}
