@@ -46,7 +46,7 @@ func (m AddCardModel) View() string {
 
 func newAddCardModel() AddCardModel {
 	return AddCardModel{
-		name: "play",
+		name: "add card",
 		help: help.New(),
 		keys: keys,
 	}
