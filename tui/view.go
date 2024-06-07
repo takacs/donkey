@@ -76,7 +76,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "Add Card":
 				return newAddCardModel(), cmd
 			case "List Cards":
-				return ListCardsModel{name: "list cards"}, cmd
+				return newListCardsModel(), cmd
 			case "Play":
 				return newPlayModel(), cmd
 			case "Stats":
