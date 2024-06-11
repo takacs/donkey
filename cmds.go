@@ -13,7 +13,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "cards",
+	Use:   "card",
 	Short: "A CLI card management tool for anki style brain training.",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add card",
+	Use:   "add",
 	Short: "Add a new card with an optional deck name",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -61,7 +61,7 @@ var whereCmd = &cobra.Command{
 }
 
 var deleteCmd = &cobra.Command{
-	Use:   "delete ID",
+	Use:   "delete",
 	Short: "Delete a card by ID",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -79,7 +79,7 @@ var deleteCmd = &cobra.Command{
 }
 
 var updateCmd = &cobra.Command{
-	Use:   "update ID",
+	Use:   "update",
 	Short: "Update a card by ID",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
