@@ -166,7 +166,7 @@ func setupTable(cards []ddb.Card) *table.Table {
 }
 
 var appCmd = &cobra.Command{
-	Use:   "app",
+	Use:   "launch",
 	Short: "Launch Donkey app.",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
