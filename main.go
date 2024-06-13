@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/takacs/donkey/cmd"
 	db "github.com/takacs/donkey/db"
 )
 
@@ -17,8 +17,5 @@ func setupPath() string {
 }
 
 func main() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	cmd.Execute()
 }
