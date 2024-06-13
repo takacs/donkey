@@ -13,7 +13,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "card",
+	Use:   "donkey",
 	Short: "A CLI card management tool for anki style brain training.",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -24,9 +24,9 @@ var rootCmd = &cobra.Command{
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new card with an optional deck name",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.RangeArgs(2, 3),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := ddb.OpenDb(setupPath())
+		c, err := ddb.OpenDb(ddb.SetupPath())
 		if err != nil {
 			return err
 		}
@@ -55,7 +55,7 @@ var whereCmd = &cobra.Command{
 	Short: "Show where your cards are stored",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := fmt.Println(setupPath())
+		_, err := fmt.Println(ddb.SetupPath())
 		return err
 	},
 }
@@ -65,7 +65,7 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete a card by ID",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := ddb.OpenDb(setupPath())
+		c, err := ddb.OpenDb(ddb.SetupPath())
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ var updateCmd = &cobra.Command{
 	Short: "Update a card by ID",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := ddb.OpenDb(setupPath())
+		c, err := ddb.OpenDb(ddb.SetupPath())
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ var listCmd = &cobra.Command{
 	Short: "List all your cards",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := ddb.OpenDb(setupPath())
+		c, err := ddb.OpenDb(ddb.SetupPath())
 		if err != nil {
 			return err
 		}

@@ -223,3 +223,11 @@ func initCardDir(path string) error {
 	}
 	return nil
 }
+
+func SetupPath() string {
+	cardDir, err := GetDbPath("cards")
+	if err != nil {
+		fmt.Println("error getting db path")
+	}
+	return cardDir
+}

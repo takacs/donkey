@@ -8,7 +8,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "donkey",
-	Short: "A CLI card management tool for anki style brain training.",
+	Short: "a cli card management tool for anki style brain training.",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
