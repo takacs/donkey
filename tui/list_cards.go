@@ -10,6 +10,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
 	"github.com/takacs/donkey/db"
+	"golang.org/x/term"
+	"os"
 )
 
 type ListCardsModel struct {
@@ -33,7 +35,8 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				fmt.Println("error getting db path")
 			}
-			return InitProject(path)
+			termWidth, termHeight, _ := term.GetSize(int(os.Stdin.Fd()))
+			return InitProject(path, termWidth, termHeight)
 		default:
 			fmt.Printf("default press quit %v \n", msg)
 			return m, tea.Quit

@@ -6,16 +6,20 @@ import (
 	lipgloss "github.com/charmbracelet/lipgloss"
 )
 
-var baseStyle = lipgloss.NewStyle().
-	BorderStyle(lipgloss.NormalBorder()).
-	BorderForeground(lipgloss.Color("240"))
+var baseStyle = lipgloss.NewStyle()
 
 type Model struct {
-	table table.Model
+	width  int
+	height int
+	table  table.Model
 }
 
-func InitProject(path string) (tea.Model, tea.Cmd) {
-	m := Model{table: createTable()}
+func InitProject(path string, width, height int) (tea.Model, tea.Cmd) {
+	m := Model{
+		width:  width,
+		height: height,
+		table:  createTable(),
+	}
 	return m, func() tea.Msg { return "hi" }
 }
 
@@ -25,7 +29,7 @@ func (m Model) Init() tea.Cmd {
 
 func createTable() table.Model {
 	columns := []table.Column{
-		{Title: "Main Menu", Width: 20},
+		{Title: "donkey", Width: 50},
 	}
 
 	rows := []table.Row{
@@ -51,6 +55,7 @@ func createTable() table.Model {
 		Background(lipgloss.Color("57")).
 		Bold(false)
 	t.SetStyles(s)
+
 	return t
 
 }
@@ -89,5 +94,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return baseStyle.Render(m.table.View()) + "\n"
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		baseStyle.Render(m.table.View())+"\n",
+	)
 }
