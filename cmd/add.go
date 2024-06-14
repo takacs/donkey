@@ -7,12 +7,6 @@ import (
 
 func init() {
 	addCmd.Flags().StringP(
-		"deck",
-		"d",
-		"default",
-		"specify a deck for your card",
-	)
-	addCmd.Flags().StringP(
 		"front",
 		"f",
 		"",
@@ -24,11 +18,11 @@ func init() {
 		"",
 		"specify the back for your card",
 	)
-	addCmd.Flags().IntP(
-		"status",
-		"s",
-		int(ddb.Todo),
-		"specify a status for your card",
+	addCmd.Flags().StringP(
+		"deck",
+		"d",
+		"default",
+		"specify a deck for your card",
 	)
 	rootCmd.AddCommand(addCmd)
 }
@@ -36,7 +30,7 @@ func init() {
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "add a new card with an optional deck name",
-	Args:  cobra.RangeArgs(2, 3),
+	Args:  cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := ddb.OpenDb(ddb.SetupPath())
 		if err != nil {
