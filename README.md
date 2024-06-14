@@ -5,3 +5,24 @@
   <img src="assets/donkey.svg" width=35%/>
 </p>
 
+
+## donkey cli:
+
+- Commands:
+	- `donkey add`
+		- add card to db
+		- flags:
+			- -f front
+			- -b back
+			- -d deck (optional: default)
+	- `donkey list`
+		- list all donkey cards
+	- `donkey delete`
+		- delete donkey cards based on id
+		- args
+			- -id id of card to delete
+	- `donkey where`
+		- show where the db is located on local machine
+	- `donkey launch`
+		- launch the [[Donkey TUI]]
+		-
