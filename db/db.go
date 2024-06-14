@@ -210,7 +210,7 @@ func GetDbPath(app string) (string, error) {
 		log.Fatal(err)
 		return "", errors.New("cant init datadir")
 	}
-	fmt.Println(cardDir)
+	// fmt.Println(cardDir)
 	return cardDir, nil
 }
 
