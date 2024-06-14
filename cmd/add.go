@@ -30,7 +30,7 @@ func init() {
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "add a new card with an optional deck name",
-	Args:  cobra.ArbitraryArgs,
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := ddb.OpenDb(ddb.SetupPath())
 		if err != nil {
