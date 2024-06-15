@@ -35,6 +35,8 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				fmt.Println("error getting db path")
 			}
 			return InitProject(path, m.width, m.height)
+		case key.Matches(msg, m.keys.Exit):
+			return m, tea.Quit
 		}
 	}
 	m.table, cmd = m.table.Update(msg)

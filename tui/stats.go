@@ -32,8 +32,7 @@ func (m StatsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				fmt.Println("error getting db path")
 			}
 			return InitProject(path, m.width, m.height)
-		default:
-			fmt.Printf("default press quit %v \n", msg)
+		case key.Matches(msg, m.keys.Exit):
 			return m, tea.Quit
 		}
 	}
