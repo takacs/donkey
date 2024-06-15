@@ -10,31 +10,6 @@ import (
 	"github.com/takacs/donkey/db"
 )
 
-type keyMap struct {
-	Back key.Binding
-}
-
-// ShortHelp returns keybindings to be shown in the mini help view. It's part
-// of the key.Map interface.
-func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Back}
-}
-
-// FullHelp returns keybindings for the expanded help view. It's part of the
-// key.Map interface.
-func (k keyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.Back}, // first column
-	}
-}
-
-var keys = keyMap{
-	Back: key.NewBinding(
-		key.WithKeys("B", "b"),
-		key.WithHelp("b/B", "go back to main menu"),
-	),
-}
-
 type PlayModel struct {
 	width, height int
 	keys          keyMap
@@ -51,7 +26,7 @@ func (m PlayModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Back):
+		case key.Matches(msg, m.keys.MainMenu):
 			path, err := db.GetDbPath("cards")
 			if err != nil {
 				fmt.Println("error getting db path")

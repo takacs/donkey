@@ -16,7 +16,7 @@ type ListCardsModel struct {
 	width, height int
 	keys          keyMap
 	help          help.Model
-	cardsTable    table.Model
+	table         table.Model
 	name          string
 }
 
@@ -25,22 +25,20 @@ func (m ListCardsModel) Init() tea.Cmd {
 }
 
 func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Back):
+		case key.Matches(msg, m.keys.MainMenu):
 			path, err := db.GetDbPath("cards")
 			if err != nil {
 				fmt.Println("error getting db path")
 			}
 			return InitProject(path, m.width, m.height)
-		default:
-			fmt.Printf("default press quit %v \n", msg)
-			return m, tea.Quit
 		}
 	}
-	return m, tea.Batch(cmds...)
+	m.table, cmd = m.table.Update(msg)
+	return m, cmd
 }
 
 func (m ListCardsModel) View() string {
@@ -51,7 +49,7 @@ func (m ListCardsModel) View() string {
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		baseStyle.Render(m.cardsTable.View())+"\n"+helpView)
+		baseStyle.Render(m.table.View())+"\n"+helpView)
 }
 
 func newListCardsModel(width, height int) ListCardsModel {
@@ -61,12 +59,12 @@ func newListCardsModel(width, height int) ListCardsModel {
 	}
 
 	return ListCardsModel{
-		width:      width,
-		height:     height,
-		name:       "list_cards",
-		help:       help.New(),
-		keys:       keys,
-		cardsTable: table,
+		width:  width,
+		height: height,
+		name:   "list_cards",
+		help:   help.New(),
+		keys:   keys,
+		table:  table,
 	}
 }
 

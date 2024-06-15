@@ -26,7 +26,7 @@ func (m StatsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Back):
+		case key.Matches(msg, m.keys.MainMenu):
 			path, err := db.GetDbPath("cards")
 			if err != nil {
 				fmt.Println("error getting db path")
