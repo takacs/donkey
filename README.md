@@ -27,4 +27,8 @@
 	- `donkey where`
 		- show where the db is located on local machine
 	- `donkey launch`
-		- launch the [[Donkey TUI]]
+		- launch the Donkey TUI
+	- `donkey load`
+		- load anki exported file
+		- flags:
+			- -d deck (optional: default)
