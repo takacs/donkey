@@ -120,7 +120,10 @@ func (m *AddCardModel) submitCard() {
 		fmt.Println("couldn't open db")
 	}
 	defer c.Db.Close()
-	c.Insert(m.inputs[front].Value(), m.inputs[back].Value(), m.inputs[deck].Value())
+	err = c.Insert(m.inputs[front].Value(), m.inputs[back].Value(), m.inputs[deck].Value())
+	if err != nil {
+		fmt.Println("couldn't instert card")
+	}
 
 	m.inputs = defaultInputs(0)
 	m.inserted = "Inserted!"
