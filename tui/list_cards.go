@@ -13,10 +13,11 @@ import (
 )
 
 type ListCardsModel struct {
-	keys       keyMap
-	help       help.Model
-	cardsTable table.Model
-	name       string
+	width, height int
+	keys          keyMap
+	help          help.Model
+	table         table.Model
+	name          string
 }
 
 func (m ListCardsModel) Init() tea.Cmd {
@@ -24,41 +25,48 @@ func (m ListCardsModel) Init() tea.Cmd {
 }
 
 func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Back):
+		case key.Matches(msg, m.keys.MainMenu):
 			path, err := db.GetDbPath("cards")
 			if err != nil {
 				fmt.Println("error getting db path")
 			}
-			return InitProject(path)
-		default:
-			fmt.Printf("default press quit %v \n", msg)
+			return InitProject(path, m.width, m.height)
+		case key.Matches(msg, m.keys.Exit):
 			return m, tea.Quit
 		}
 	}
-	return m, tea.Batch(cmds...)
+	m.table, cmd = m.table.Update(msg)
+	return m, cmd
 }
 
 func (m ListCardsModel) View() string {
 	helpView := m.help.View(m.keys)
 
-	return baseStyle.Render(m.cardsTable.View()) + "\n" + helpView
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		baseStyle.Render(m.table.View())+"\n"+helpView)
 }
 
-func newListCardsModel() ListCardsModel {
+func newListCardsModel(width, height int) ListCardsModel {
 	table, err := getTableFromCards()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
 
 	return ListCardsModel{
-		name:       "list_cards",
-		help:       help.New(),
-		keys:       keys,
-		cardsTable: table,
+		width:  width,
+		height: height,
+		name:   "list_cards",
+		help:   help.New(),
+		keys:   keys,
+		table:  table,
 	}
 }
 
