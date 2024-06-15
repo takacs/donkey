@@ -86,6 +86,7 @@ func (m AddCardModel) View() string {
 
  %s
 
+
  %s
 
  %s
@@ -133,6 +134,7 @@ func defaultInputs(focus int) []textinput.Model {
 	var inputs []textinput.Model = make([]textinput.Model, 3)
 	inputs[front] = textinput.New()
 	inputs[front].Placeholder = "donkey"
+	inputs[front].CharLimit = 1000
 	inputs[front].Width = formWidth
 	inputs[front].Prompt = "> "
 
