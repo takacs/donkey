@@ -3,11 +3,18 @@ package tui
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	lipgloss "github.com/charmbracelet/lipgloss"
+	"github.com/takacs/donkey/db"
 )
 
 type StatsModel struct {
-	name string
+	width, height int
+	keys          keyMap
+	help          help.Model
+	name          string
 }
 
 func (m StatsModel) Init() tea.Cmd {
@@ -19,6 +26,12 @@ func (m StatsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, m.keys.Back):
+			path, err := db.GetDbPath("cards")
+			if err != nil {
+				fmt.Println("error getting db path")
+			}
+			return InitProject(path, m.width, m.height)
 		default:
 			fmt.Printf("default press quit %v \n", msg)
 			return m, tea.Quit
@@ -28,5 +41,22 @@ func (m StatsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m StatsModel) View() string {
-	return m.name
+	helpView := m.help.View(m.keys)
+
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		baseStyle.Render(m.name+"\n"+helpView))
+}
+
+func newStatsModel(width, height int) StatsModel {
+	return StatsModel{
+		width:  width,
+		height: height,
+		name:   "stats",
+		help:   help.New(),
+		keys:   keys,
+	}
 }

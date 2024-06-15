@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
@@ -9,9 +10,8 @@ import (
 var baseStyle = lipgloss.NewStyle()
 
 type Model struct {
-	width  int
-	height int
-	table  table.Model
+	width, height int
+	table         table.Model
 }
 
 func InitProject(path string, width, height int) (tea.Model, tea.Cmd) {
@@ -79,13 +79,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 			switch m.table.SelectedRow()[0] {
 			case "Add Card":
-				return newAddCardModel(), cmd
+				return newAddCardModel(m.width, m.height), cmd
 			case "List Cards":
-				return newListCardsModel(), cmd
+				return newListCardsModel(m.width, m.height), cmd
 			case "Play":
-				return newPlayModel(), cmd
+				return newPlayModel(m.width, m.height), cmd
 			case "Stats":
-				return StatsModel{name: "stats"}, cmd
+				return newStatsModel(m.width, m.height), cmd
 			}
 		}
 	}
@@ -94,11 +94,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return lipgloss.Place(
+	style := lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
 		baseStyle.Render(m.table.View())+"\n",
 	)
+	fmt.Printf("%v", style)
+	return style
 }

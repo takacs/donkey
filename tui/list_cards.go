@@ -10,15 +10,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
 	"github.com/takacs/donkey/db"
-	"golang.org/x/term"
-	"os"
 )
 
 type ListCardsModel struct {
-	keys       keyMap
-	help       help.Model
-	cardsTable table.Model
-	name       string
+	width, height int
+	keys          keyMap
+	help          help.Model
+	cardsTable    table.Model
+	name          string
 }
 
 func (m ListCardsModel) Init() tea.Cmd {
@@ -35,8 +34,7 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				fmt.Println("error getting db path")
 			}
-			termWidth, termHeight, _ := term.GetSize(int(os.Stdin.Fd()))
-			return InitProject(path, termWidth, termHeight)
+			return InitProject(path, m.width, m.height)
 		default:
 			fmt.Printf("default press quit %v \n", msg)
 			return m, tea.Quit
@@ -48,16 +46,23 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ListCardsModel) View() string {
 	helpView := m.help.View(m.keys)
 
-	return baseStyle.Render(m.cardsTable.View()) + "\n" + helpView
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		baseStyle.Render(m.cardsTable.View())+"\n"+helpView)
 }
 
-func newListCardsModel() ListCardsModel {
+func newListCardsModel(width, height int) ListCardsModel {
 	table, err := getTableFromCards()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
 
 	return ListCardsModel{
+		width:      width,
+		height:     height,
 		name:       "list_cards",
 		help:       help.New(),
 		keys:       keys,

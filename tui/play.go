@@ -6,9 +6,8 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	lipgloss "github.com/charmbracelet/lipgloss"
 	"github.com/takacs/donkey/db"
-	"golang.org/x/term"
-	"os"
 )
 
 type keyMap struct {
@@ -37,9 +36,10 @@ var keys = keyMap{
 }
 
 type PlayModel struct {
-	keys keyMap
-	help help.Model
-	name string
+	width, height int
+	keys          keyMap
+	help          help.Model
+	name          string
 }
 
 func (m PlayModel) Init() tea.Cmd {
@@ -56,8 +56,7 @@ func (m PlayModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				fmt.Println("error getting db path")
 			}
-			termWidth, termHeight, _ := term.GetSize(int(os.Stdin.Fd()))
-			return InitProject(path, termWidth, termHeight)
+			return InitProject(path, m.width, m.height)
 		default:
 			fmt.Printf("default press quit %v \n", msg)
 			return m, tea.Quit
@@ -69,13 +68,20 @@ func (m PlayModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m PlayModel) View() string {
 	helpView := m.help.View(m.keys)
 
-	return m.name + "\n" + helpView
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		baseStyle.Render(m.name+"\n"+helpView))
 }
 
-func newPlayModel() PlayModel {
+func newPlayModel(width, height int) PlayModel {
 	return PlayModel{
-		name: "play",
-		help: help.New(),
-		keys: keys,
+		width:  width,
+		height: height,
+		name:   "play",
+		help:   help.New(),
+		keys:   keys,
 	}
 }
