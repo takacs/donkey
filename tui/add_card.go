@@ -132,23 +132,24 @@ func (m *AddCardModel) submitCard() {
 
 func defaultInputs(focus int) []textinput.Model {
 	var inputs []textinput.Model = make([]textinput.Model, 3)
+
+	// TODO this alignment feels like a hack
 	inputs[front] = textinput.New()
-	inputs[front].Placeholder = "donkey"
+	inputs[front].Placeholder = lipgloss.NewStyle().PaddingRight(formWidth - len("donkey")).Render("donkey")
+	inputs[front].PlaceholderStyle.AlignHorizontal(lipgloss.Left)
 	inputs[front].CharLimit = 1000
 	inputs[front].Width = formWidth
-	inputs[front].Prompt = "> "
 
 	inputs[back] = textinput.New()
 	inputs[back].Placeholder = "best app ever"
+	inputs[back].Placeholder = lipgloss.NewStyle().PaddingRight(formWidth - len("best app ever")).Render("best app ever")
 	inputs[back].CharLimit = 1000
 	inputs[back].Width = formWidth
-	inputs[back].Prompt = "> "
 
 	inputs[deck] = textinput.New()
-	inputs[deck].Placeholder = "default"
+	inputs[deck].Placeholder = lipgloss.NewStyle().PaddingRight(formWidth - len("default")).Render("default")
 	inputs[deck].CharLimit = 100
 	inputs[deck].Width = formWidth
-	inputs[deck].Prompt = "> "
 
 	inputs[focus].Focus()
 
