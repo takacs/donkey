@@ -4,6 +4,9 @@
 <p align="center">
   <img src="assets/donkey.svg" width=35%/>
 </p>
+<p align="center">
+  <img src="https://github.com/takacs/donkey/actions/workflows/ci.yml/badge.svg">
+</p>
 
 
 ## donkey cli:
@@ -25,4 +28,3 @@
 		- show where the db is located on local machine
 	- `donkey launch`
 		- launch the [[Donkey TUI]]
-		-
