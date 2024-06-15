@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -41,8 +42,7 @@ var loadCmd = &cobra.Command{
 }
 
 func loadFileToDb(path string, deck string, cdb *ddb.CardDB) {
-	fmt.Println(path)
-	file, err := os.Open(path)
+	file, err := os.Open(filepath.Clean(path))
 	if err != nil {
 		log.Fatalf("failed to open file: %s", err)
 	}
