@@ -86,9 +86,9 @@ func getTableFromCards() (table.Model, error) {
 
 	// table setup
 	columns := []table.Column{
-		{Title: "Front", Width: 20},
-		{Title: "Back", Width: 20},
-		{Title: "Deck", Width: 20},
+		{Title: "Front", Width: 50},
+		{Title: "Back", Width: 50},
+		{Title: "Deck", Width: 15},
 	}
 
 	rows := []table.Row{}
