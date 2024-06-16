@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	ddb "github.com/takacs/donkey/db"
+	"github.com/takacs/donkey/carddb"
 )
 
 func init() {
@@ -32,11 +32,11 @@ var addCmd = &cobra.Command{
 	Short: "add a new card with an optional deck name",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := ddb.OpenDb(ddb.SetupPath())
+		carddb, err := carddb.New()
 		if err != nil {
 			return err
 		}
-		defer c.Db.Close()
+		defer carddb.Close()
 		front, err := cmd.Flags().GetString("front")
 		if err != nil {
 			return err
@@ -49,7 +49,7 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if err := c.Insert(front, back, deck); err != nil {
+		if err := carddb.Insert(front, back, deck); err != nil {
 			return err
 		}
 		return nil

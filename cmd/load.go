@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	ddb "github.com/takacs/donkey/db"
+	"github.com/takacs/donkey/carddb"
 )
 
 func init() {
@@ -27,21 +27,21 @@ var loadCmd = &cobra.Command{
 	Short: "load exported anki file",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := ddb.OpenDb(ddb.SetupPath())
+		carddb, err := carddb.New()
 		if err != nil {
 			return err
 		}
-		defer c.Db.Close()
+		defer carddb.Close()
 		deck, err := cmd.Flags().GetString("deck")
 		if err != nil {
 			return err
 		}
-		loadFileToDb(args[0], deck, c)
+		loadFileToDb(args[0], deck, carddb)
 		return nil
 	},
 }
 
-func loadFileToDb(path string, deck string, cdb *ddb.CardDB) {
+func loadFileToDb(path string, deck string, cdb *carddb.CardDB) {
 	file, err := os.Open(filepath.Clean(path))
 	if err != nil {
 		log.Fatalf("failed to open file: %s", err)

@@ -17,7 +17,7 @@ type Model struct {
 	table         table.Model
 }
 
-func InitProject(path string, width, height int) (tea.Model, tea.Cmd) {
+func InitProject(width, height int) (tea.Model, tea.Cmd) {
 	m := Model{
 		width:  width,
 		height: height,

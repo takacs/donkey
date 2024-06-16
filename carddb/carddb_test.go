@@ -224,6 +224,6 @@ func setup() *CardDB {
 }
 
 func teardown(tDB *CardDB) {
-	tDB.Db.Close()
-	os.Remove(tDB.dataDir)
+	tDB.Close()
+	os.Remove(tDB.DataDir)
 }

@@ -3,7 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	ddb "github.com/takacs/donkey/db"
+	"github.com/takacs/donkey/carddb"
+	"log"
 )
 
 func init() {
@@ -15,7 +16,11 @@ var whereCmd = &cobra.Command{
 	Short: "Show where your cards are stored",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := fmt.Println(ddb.SetupPath())
+		carddb, err := carddb.New()
+		if err != nil {
+			log.Fatal("can't open db")
+		}
+		fmt.Println(carddb.DataDir)
 		return err
 	},
 }

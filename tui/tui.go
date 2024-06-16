@@ -6,7 +6,6 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/takacs/donkey/db"
 	"golang.org/x/term"
 )
 
@@ -22,12 +21,8 @@ func StartTea() error {
 			}
 		}()
 	}
-	path, err := db.GetDbPath("cards")
-	if err != nil {
-		fmt.Println("couldn't get db path")
-	}
 	termWidth, termHeight, _ := term.GetSize(int(os.Stdin.Fd()))
-	m, _ := InitProject(path, termWidth, termHeight)
+	m, _ := InitProject(termWidth, termHeight)
 	program := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := program.Run(); err != nil {
 		fmt.Println("Error running program:", err)

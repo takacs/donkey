@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
-	ddb "github.com/takacs/donkey/db"
+	"github.com/takacs/donkey/carddb"
 )
 
 const (
@@ -116,12 +116,12 @@ func (m *AddCardModel) nextFocus() {
 }
 
 func (m *AddCardModel) submitCard() {
-	c, err := ddb.OpenDb(ddb.SetupPath())
+	carddb, err := carddb.New()
 	if err != nil {
 		fmt.Println("couldn't open db")
 	}
-	defer c.Db.Close()
-	err = c.Insert(m.inputs[front].Value(), m.inputs[back].Value(), m.inputs[deck].Value())
+	defer carddb.Close()
+	err = carddb.Insert(m.inputs[front].Value(), m.inputs[back].Value(), m.inputs[deck].Value())
 	if err != nil {
 		fmt.Println("couldn't instert card")
 	}

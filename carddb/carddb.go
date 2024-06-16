@@ -55,24 +55,24 @@ func (s Status) Int() int {
 }
 
 type CardDB struct {
-	Db      *sql.DB
-	dataDir string
+	db      *sql.DB
+	DataDir string
 }
 
 func (c *CardDB) TableExists(name string) bool {
-	if _, err := c.Db.Query("SELECT * FROM cards"); err == nil {
+	if _, err := c.db.Query("SELECT * FROM cards"); err == nil {
 		return true
 	}
 	return false
 }
 
 func (c *CardDB) CreateTable() error {
-	_, err := c.Db.Exec(`CREATE TABLE "cards" ( "id" INTEGER, "front" TEXT NOT NULL, "back" TEXT, "deck" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
+	_, err := c.db.Exec(`CREATE TABLE "cards" ( "id" INTEGER, "front" TEXT NOT NULL, "back" TEXT, "deck" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
 	return err
 }
 
 func (c *CardDB) Insert(front, back, deck string) error {
-	_, err := c.Db.Exec(
+	_, err := c.db.Exec(
 		"INSERT INTO cards(front, back, deck, status, created) VALUES( ?, ?, ?, ?, ?)",
 		front,
 		back,
@@ -83,7 +83,7 @@ func (c *CardDB) Insert(front, back, deck string) error {
 }
 
 func (c *CardDB) Delete(id uint) error {
-	_, err := c.Db.Exec("DELETE FROM cards WHERE id = ?", id)
+	_, err := c.db.Exec("DELETE FROM cards WHERE id = ?", id)
 	return err
 }
 
@@ -93,7 +93,7 @@ func (c *CardDB) Update(card Card) error {
 		return err
 	}
 	orig.merge(card)
-	_, err = c.Db.Exec(
+	_, err = c.db.Exec(
 		"UPDATE cards SET front = ?, back = ?, deck = ?, status = ? WHERE id = ?",
 		orig.Front,
 		orig.Back,
@@ -121,7 +121,7 @@ func (orig *Card) merge(t Card) {
 
 func (c *CardDB) GetCards() ([]Card, error) {
 	var cards []Card
-	rows, err := c.Db.Query("SELECT * FROM cards")
+	rows, err := c.db.Query("SELECT * FROM cards")
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
@@ -145,7 +145,7 @@ func (c *CardDB) GetCards() ([]Card, error) {
 
 func (c *CardDB) GetCardsByStatus(status string) ([]Card, error) {
 	var cards []Card
-	rows, err := c.Db.Query("SELECT * FROM cards WHERE status = ?", status)
+	rows, err := c.db.Query("SELECT * FROM cards WHERE status = ?", status)
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
@@ -169,7 +169,7 @@ func (c *CardDB) GetCardsByStatus(status string) ([]Card, error) {
 
 func (c *CardDB) GetCard(id uint) (Card, error) {
 	var card Card
-	err := c.Db.QueryRow("SELECT * FROM cards WHERE id = ?", id).
+	err := c.db.QueryRow("SELECT * FROM cards WHERE id = ?", id).
 		Scan(
 			&card.ID,
 			&card.Front,
@@ -179,6 +179,14 @@ func (c *CardDB) GetCard(id uint) (Card, error) {
 			&card.Created,
 		)
 	return card, err
+}
+
+func (c *CardDB) Close() error {
+	if err := c.db.Close(); err != nil {
+		log.Fatal("failed closing db")
+		return errors.New("failed closing db")
+	}
+	return nil
 }
 
 func getDbPath() (string, error) {

@@ -7,7 +7,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
-	"github.com/takacs/donkey/db"
 )
 
 type PlayModel struct {
@@ -27,11 +26,7 @@ func (m PlayModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
-			path, err := db.GetDbPath("cards")
-			if err != nil {
-				fmt.Println("error getting db path")
-			}
-			return InitProject(path, m.width, m.height)
+			return InitProject(m.width, m.height)
 		default:
 			fmt.Printf("default press quit %v \n", msg)
 			return m, tea.Quit
@@ -39,7 +34,6 @@ func (m PlayModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	return m, tea.Batch(cmds...)
 }
-
 func (m PlayModel) View() string {
 	helpView := m.help.View(m.keys)
 

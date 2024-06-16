@@ -5,7 +5,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/spf13/cobra"
-	ddb "github.com/takacs/donkey/db"
+	"github.com/takacs/donkey/carddb"
 )
 
 func init() {
@@ -17,12 +17,12 @@ var listCmd = &cobra.Command{
 	Short: "list cards in db",
 	Args:  cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := ddb.OpenDb(ddb.SetupPath())
+		carddb, err := carddb.New()
 		if err != nil {
 			return err
 		}
-		defer c.Db.Close()
-		cards, err := c.Getcards()
+		defer carddb.Close()
+		cards, err := carddb.GetCards()
 		if err != nil {
 			return err
 		}
@@ -31,7 +31,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func setupTable(cards []ddb.Card) *table.Table {
+func setupTable(cards []carddb.Card) *table.Table {
 	columns := []string{"ID", "Front", "Back", "Deck", "Created At"}
 	var rows [][]string
 	for _, card := range cards {
