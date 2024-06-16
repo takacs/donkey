@@ -1,4 +1,4 @@
-package db
+package cards
 
 import (
 	"database/sql"
@@ -19,6 +19,10 @@ const (
 	Todo Status = iota
 	InProgress
 	Done
+)
+
+const (
+	dbName = "cards"
 )
 
 func (s Status) String() string {
@@ -84,7 +88,7 @@ func (c *CardDB) Delete(id uint) error {
 }
 
 func (c *CardDB) Update(card Card) error {
-	orig, err := c.Getcard(card.ID)
+	orig, err := c.GetCard(card.ID)
 	if err != nil {
 		return err
 	}
@@ -115,7 +119,7 @@ func (orig *Card) merge(t Card) {
 	}
 }
 
-func (c *CardDB) Getcards() ([]Card, error) {
+func (c *CardDB) GetCards() ([]Card, error) {
 	var cards []Card
 	rows, err := c.Db.Query("SELECT * FROM cards")
 	if err != nil {
@@ -139,7 +143,7 @@ func (c *CardDB) Getcards() ([]Card, error) {
 	return cards, err
 }
 
-func (c *CardDB) GetcardsByStatus(status string) ([]Card, error) {
+func (c *CardDB) GetCardsByStatus(status string) ([]Card, error) {
 	var cards []Card
 	rows, err := c.Db.Query("SELECT * FROM cards WHERE status = ?", status)
 	if err != nil {
@@ -163,7 +167,7 @@ func (c *CardDB) GetcardsByStatus(status string) ([]Card, error) {
 	return cards, err
 }
 
-func (c *CardDB) Getcard(id uint) (Card, error) {
+func (c *CardDB) GetCard(id uint) (Card, error) {
 	var card Card
 	err := c.Db.QueryRow("SELECT * FROM cards WHERE id = ?", id).
 		Scan(
@@ -177,23 +181,8 @@ func (c *CardDB) Getcard(id uint) (Card, error) {
 	return card, err
 }
 
-func OpenDb(path string) (*CardDB, error) {
-	db, err := sql.Open("sqlite3", filepath.Join(path, "cards.db"))
-	if err != nil {
-		return nil, err
-	}
-	c := CardDB{db, path}
-	if !c.TableExists("cards") {
-		err := c.CreateTable()
-		if err != nil {
-			return nil, err
-		}
-	}
-	return &c, nil
-}
-
-func GetDbPath(app string) (string, error) {
-	scope := gap.NewScope(gap.User, app)
+func getDbPath() (string, error) {
+	scope := gap.NewScope(gap.User, dbName)
 	dirs, err := scope.DataDirs()
 	if err != nil {
 		log.Fatal(err)
@@ -208,9 +197,8 @@ func GetDbPath(app string) (string, error) {
 	}
 	if err := initCardDir(cardDir); err != nil {
 		log.Fatal(err)
-		return "", errors.New("cant init datadir")
+		return "", errors.New("can't init datadir")
 	}
-	// fmt.Println(cardDir)
 	return cardDir, nil
 }
 
@@ -224,10 +212,32 @@ func initCardDir(path string) error {
 	return nil
 }
 
-func SetupPath() string {
-	cardDir, err := GetDbPath("cards")
+func openDb(path string) (*CardDB, error) {
+	db, err := sql.Open("sqlite3", filepath.Join(path, dbName, ".db"))
 	if err != nil {
-		fmt.Println("error getting db path")
+		return nil, err
 	}
-	return cardDir
+	c := CardDB{db, path}
+	if !c.TableExists(dbName) {
+		err := c.CreateTable()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &c, nil
+}
+
+func New() (error, *CardDB) {
+	path, err := getDbPath()
+	if err != nil {
+		log.Fatal("error getting db path")
+		return errors.New("error getting db path"), nil
+	}
+	db, err := openDb(path)
+	if err != nil {
+		log.Fatal("couldn't open db")
+		return errors.New("couldn't open db"), nil
+	}
+	return nil, db
+
 }
