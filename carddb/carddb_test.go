@@ -1,4 +1,4 @@
-package cards
+package carddb
 
 import (
 	"database/sql"

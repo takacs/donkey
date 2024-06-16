@@ -1,4 +1,4 @@
-package cards
+package carddb
 
 import (
 	"database/sql"
@@ -227,17 +227,16 @@ func openDb(path string) (*CardDB, error) {
 	return &c, nil
 }
 
-func New() (error, *CardDB) {
+func New() (*CardDB, error) {
 	path, err := getDbPath()
 	if err != nil {
 		log.Fatal("error getting db path")
-		return errors.New("error getting db path"), nil
+		return nil, errors.New("error getting db path")
 	}
 	db, err := openDb(path)
 	if err != nil {
 		log.Fatal("couldn't open db")
-		return errors.New("couldn't open db"), nil
+		return nil, errors.New("couldn't open db")
 	}
-	return nil, db
-
+	return db, nil
 }
