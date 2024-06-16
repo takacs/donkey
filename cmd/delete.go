@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	ddb "github.com/takacs/donkey/db"
+	"github.com/takacs/donkey/carddb"
 	"strconv"
 )
 
@@ -22,11 +22,11 @@ var deleteCmd = &cobra.Command{
 	Short: "delete a card based on id. get a list of ids with `donkey list`",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := ddb.OpenDb(ddb.SetupPath())
+		carddb, err := carddb.New()
 		if err != nil {
 			return err
 		}
-		defer c.Db.Close()
+		defer carddb.Close()
 		ids, err := cmd.Flags().GetString("id")
 		if err != nil {
 			fmt.Println("-id flag is required")
@@ -37,6 +37,6 @@ var deleteCmd = &cobra.Command{
 			fmt.Println("-id flag is required")
 			fmt.Println()
 		}
-		return c.Delete(uint(id))
+		return carddb.Delete(uint(id))
 	},
 }

@@ -1,13 +1,10 @@
 package tui
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
-	"github.com/takacs/donkey/db"
 )
 
 type StatsModel struct {
@@ -27,11 +24,7 @@ func (m StatsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
-			path, err := db.GetDbPath("cards")
-			if err != nil {
-				fmt.Println("error getting db path")
-			}
-			return InitProject(path, m.width, m.height)
+			return InitProject(m.width, m.height)
 		case key.Matches(msg, m.keys.Exit):
 			return m, tea.Quit
 		}

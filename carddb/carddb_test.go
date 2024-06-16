@@ -1,4 +1,4 @@
-package db
+package carddb
 
 import (
 	"database/sql"
@@ -30,7 +30,7 @@ func TestDelete(t *testing.T) {
 			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("unable to insert cards: %v", err)
 			}
-			cards, err := tDB.Getcards()
+			cards, err := tDB.GetCards()
 			if err != nil {
 				t.Fatalf("unable to get cards: %v", err)
 			}
@@ -41,7 +41,7 @@ func TestDelete(t *testing.T) {
 			if err := tDB.Delete(1); err != nil {
 				t.Fatalf("unable to delete cards: %v", err)
 			}
-			cards, err = tDB.Getcards()
+			cards, err = tDB.GetCards()
 			if err != nil {
 				t.Fatalf("unable to get cards: %v", err)
 			}
@@ -52,7 +52,7 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestGetcard(t *testing.T) {
+func TestGetCard(t *testing.T) {
 	tests := []struct {
 		want Card
 	}{
@@ -72,7 +72,7 @@ func TestGetcard(t *testing.T) {
 			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			Card, err := tDB.Getcard(tc.want.ID)
+			Card, err := tDB.GetCard(tc.want.ID)
 			if err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
@@ -124,7 +124,7 @@ func TestUpdate(t *testing.T) {
 			if err := tDB.Update(*tc.new); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			Card, err := tDB.Getcard(tc.want.ID)
+			Card, err := tDB.GetCard(tc.want.ID)
 			if err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
@@ -171,7 +171,7 @@ func TestMerge(t *testing.T) {
 	}
 }
 
-func TestGetcardsByStatus(t *testing.T) {
+func TestGetCardsByStatus(t *testing.T) {
 	tests := []struct {
 		want Card
 	}{
@@ -192,7 +192,7 @@ func TestGetcardsByStatus(t *testing.T) {
 			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
-			Cards, err := tDB.GetcardsByStatus(tc.want.Status)
+			Cards, err := tDB.GetCardsByStatus(tc.want.Status)
 			if err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
@@ -224,6 +224,6 @@ func setup() *CardDB {
 }
 
 func teardown(tDB *CardDB) {
-	tDB.Db.Close()
-	os.Remove(tDB.dataDir)
+	tDB.Close()
+	os.Remove(tDB.DataDir)
 }

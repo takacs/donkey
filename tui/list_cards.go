@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
-	"github.com/takacs/donkey/db"
+	"github.com/takacs/donkey/carddb"
 )
 
 type ListCardsModel struct {
@@ -30,11 +30,7 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
-			path, err := db.GetDbPath("cards")
-			if err != nil {
-				fmt.Println("error getting db path")
-			}
-			return InitProject(path, m.width, m.height)
+			return InitProject(m.width, m.height)
 		case key.Matches(msg, m.keys.Exit):
 			return m, tea.Quit
 		}
@@ -71,15 +67,11 @@ func newListCardsModel(width, height int) ListCardsModel {
 }
 
 func getTableFromCards() (table.Model, error) {
-	path, err := db.GetDbPath("cards")
+	carddb, err := carddb.New()
 	if err != nil {
-		return table.Model{}, errors.New("error getting db path")
+		return table.Model{}, errors.New("error getting db")
 	}
-	cards_db, err := db.OpenDb(path)
-	if err != nil {
-		return table.Model{}, errors.New("error opening db path")
-	}
-	cards, err := cards_db.Getcards()
+	cards, err := carddb.GetCards()
 	if err != nil {
 		return table.Model{}, errors.New("error getting cards")
 	}
