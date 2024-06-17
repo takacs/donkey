@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"errors"
 	_ "github.com/mattn/go-sqlite3"
 	gap "github.com/muesli/go-app-paths"
 	"log"
@@ -19,7 +18,6 @@ func GetDbPath() (string, error) {
 	dirs, err := scope.DataDirs()
 	if err != nil {
 		log.Fatal(err)
-		return "", errors.New("cant get datadir")
 	}
 
 	var dir string
@@ -29,9 +27,9 @@ func GetDbPath() (string, error) {
 	} else {
 		dir, _ = os.UserHomeDir()
 	}
+
 	if err := initDataDir(dir); err != nil {
 		log.Fatal(err)
-		return "", errors.New("can't init datadir")
 	}
 	return dir, nil
 }
@@ -39,12 +37,16 @@ func GetDbPath() (string, error) {
 func OpenDb() (*sql.DB, error) {
 	path, err := GetDbPath()
 	if err != nil {
-		log.Fatal("couldn't get db path")
-		return nil, err
+		log.Fatal(err)
 	}
-	db, err := sql.Open("sqlite3", filepath.Join(path, donkeyDbName, ".db"))
+	db, err := sql.Open("sqlite3", filepath.Join(path, donkeyDbName+".db"))
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
+	}
+
+	_, err = db.Exec("PRAGMA foreign_keys = ON;")
+	if err != nil {
+		log.Fatal(err)
 	}
 	return db, nil
 }
