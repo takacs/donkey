@@ -18,10 +18,6 @@ const (
 	Done
 )
 
-const (
-	dbName = "cards"
-)
-
 func (s Status) String() string {
 	return [...]string{"todo", "in progress", "done"}[s]
 }

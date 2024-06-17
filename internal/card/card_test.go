@@ -140,7 +140,6 @@ func setup() *CardDb {
 func teardown(tDB *CardDb) {
 	tDB.Close()
 	path := filepath.Join(os.TempDir(), "test.db")
-	fmt.Printf(path)
 	os.Remove(path)
 
 }
