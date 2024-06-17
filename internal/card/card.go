@@ -75,9 +75,13 @@ func (c *CardDb) Close() error {
 	return nil
 }
 
-func (c *CardDb) GetCards() ([]Card, error) {
+func (c *CardDb) GetCards(limit int) ([]Card, error) {
 	var cards []Card
-	rows, err := c.db.Query("SELECT * FROM card")
+	query := "SELECT * FROM card "
+	if limit != 0 {
+		query += fmt.Sprintf("LIMIT %v", limit)
+	}
+	rows, err := c.db.Query(query)
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
