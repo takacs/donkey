@@ -1,12 +1,14 @@
 package tui
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
+
+	"github.com/takacs/donkey/internal/card"
 )
 
 type ReviewModel struct {
@@ -14,6 +16,7 @@ type ReviewModel struct {
 	keys          keyMap
 	help          help.Model
 	name          string
+	cards         []card.Card
 }
 
 func (m ReviewModel) Init() tea.Cmd {
@@ -28,7 +31,6 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.MainMenu):
 			return InitProject(m.width, m.height)
 		default:
-			fmt.Printf("default press quit %v \n", msg)
 			return m, tea.Quit
 		}
 	}
@@ -37,6 +39,7 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ReviewModel) View() string {
 	helpView := m.help.View(m.keys)
 
+	log.Println(m.cards)
 	return lipgloss.Place(
 		m.width,
 		m.height,
@@ -46,10 +49,22 @@ func (m ReviewModel) View() string {
 }
 
 func newReviewModel(width, height int) ReviewModel {
+	// TODO improve init
+	carddb, err := card.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cards, err := carddb.GetCards(20)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return ReviewModel{
 		width:  width,
 		height: height,
 		name:   "review",
+		cards:  cards,
 		help:   help.New(),
 		keys:   keys,
 	}
