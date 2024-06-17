@@ -11,12 +11,16 @@ import (
 	"github.com/takacs/donkey/internal/card"
 )
 
+var reviewCardStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(10, 20, 10, 20)
+
 type ReviewModel struct {
 	width, height int
-	keys          keyMap
+	keys          reviewKeyMap
 	help          help.Model
 	name          string
 	cards         []card.Card
+	currentCard   int
+	flip          bool
 }
 
 func (m ReviewModel) Init() tea.Cmd {
@@ -30,22 +34,46 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
 			return InitProject(m.width, m.height)
-		default:
-			return m, tea.Quit
+		case key.Matches(msg, m.keys.Enter):
+			m.flip = true
+		case key.Matches(msg, m.keys.Easy):
+			m.flip = false
+			m.currentCard += 1
+		case key.Matches(msg, m.keys.Good):
+			m.flip = false
+			m.currentCard += 1
+		case key.Matches(msg, m.keys.Hard):
+			m.flip = false
+			m.currentCard += 1
+		case key.Matches(msg, m.keys.Again):
+			m.flip = false
+			m.currentCard += 1
 		}
+
 	}
 	return m, tea.Batch(cmds...)
 }
 func (m ReviewModel) View() string {
 	helpView := m.help.View(m.keys)
 
-	log.Println(m.cards)
+	cardView := m.getCardView()
+
 	return lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		baseStyle.Render(m.name+"\n"+helpView))
+		reviewCardStyle.Render(cardView)+"\n"+helpView)
+}
+
+func (m ReviewModel) getCardView() string {
+	centerStyle := lipgloss.NewStyle().Align(lipgloss.Center)
+	cardView := centerStyle.Render(m.cards[m.currentCard].Front) + "\n"
+	if m.flip {
+		cardView = cardView + centerStyle.Render("-----") + "\n"
+		cardView = cardView + centerStyle.Render(m.cards[m.currentCard].Back)
+	}
+	return cardView
 }
 
 func newReviewModel(width, height int) ReviewModel {
@@ -60,12 +88,16 @@ func newReviewModel(width, height int) ReviewModel {
 		log.Fatal(err)
 	}
 
+	h := help.New()
+	h.ShowAll = true
+
 	return ReviewModel{
 		width:  width,
 		height: height,
 		name:   "review",
 		cards:  cards,
-		help:   help.New(),
-		keys:   keys,
+		help:   h,
+		keys:   reviewKeys,
+		flip:   false,
 	}
 }
