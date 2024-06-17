@@ -9,18 +9,18 @@ import (
 	lipgloss "github.com/charmbracelet/lipgloss"
 )
 
-type PlayModel struct {
+type ReviewModel struct {
 	width, height int
 	keys          keyMap
 	help          help.Model
 	name          string
 }
 
-func (m PlayModel) Init() tea.Cmd {
+func (m ReviewModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m PlayModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -34,7 +34,7 @@ func (m PlayModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	return m, tea.Batch(cmds...)
 }
-func (m PlayModel) View() string {
+func (m ReviewModel) View() string {
 	helpView := m.help.View(m.keys)
 
 	return lipgloss.Place(
@@ -45,11 +45,11 @@ func (m PlayModel) View() string {
 		baseStyle.Render(m.name+"\n"+helpView))
 }
 
-func newPlayModel(width, height int) PlayModel {
-	return PlayModel{
+func newReviewModel(width, height int) ReviewModel {
+	return ReviewModel{
 		width:  width,
 		height: height,
-		name:   "play",
+		name:   "review",
 		help:   help.New(),
 		keys:   keys,
 	}

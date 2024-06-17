@@ -40,7 +40,7 @@ func createTable() table.Model {
 	rows := []table.Row{
 		{"Add Card"},
 		{"List Cards"},
-		{"Play"},
+		{"Review"},
 		{"Stats"},
 	}
 	t := table.New(
@@ -83,8 +83,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return newAddCardModel(m.width, m.height), cmd
 			case "List Cards":
 				return newListCardsModel(m.width, m.height), cmd
-			case "Play":
-				return newPlayModel(m.width, m.height), cmd
+			case "Review":
+				return newReviewModel(m.width, m.height), cmd
 			case "Stats":
 				return newStatsModel(m.width, m.height), cmd
 			}
