@@ -1,4 +1,4 @@
-package carddb
+package card
 
 import (
 	"database/sql"
@@ -84,93 +84,6 @@ func TestGetCard(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
-	tests := []struct {
-		new  *Card
-		old  *Card
-		want Card
-	}{
-		{
-			new: &Card{
-				ID:     1,
-				Front:  "bubbletea",
-				Back:   "",
-				Deck:   "",
-				Status: "",
-			},
-			old: &Card{
-				ID:     1,
-				Front:  "charm",
-				Back:   "A library that helps you create TUIs",
-				Deck:   "default",
-				Status: Todo.String(),
-			},
-			want: Card{
-				ID:     1,
-				Front:  "bubbletea",
-				Back:   "A library that helps you create TUIs",
-				Deck:   "default",
-				Status: Todo.String(),
-			},
-		},
-	}
-	for _, tc := range tests {
-		t.Run(tc.new.Front, func(t *testing.T) {
-			tDB := setup()
-			defer teardown(tDB)
-			if err := tDB.Insert(tc.old.Front, tc.old.Back, tc.old.Deck); err != nil {
-				t.Fatalf("we ran into an unexpected error: %v", err)
-			}
-			if err := tDB.Update(*tc.new); err != nil {
-				t.Fatalf("we ran into an unexpected error: %v", err)
-			}
-			Card, err := tDB.GetCard(tc.want.ID)
-			if err != nil {
-				t.Fatalf("we ran into an unexpected error: %v", err)
-			}
-			tc.want.Created = Card.Created
-			if !reflect.DeepEqual(Card, tc.want) {
-				t.Fatalf("got: %#v, want: %#v", Card, tc.want)
-			}
-		})
-	}
-}
-
-func TestMerge(t *testing.T) {
-	tests := []struct {
-		new  Card
-		old  Card
-		want Card
-	}{
-		{
-			new: Card{
-				ID:     1,
-				Front:  "strawberries",
-				Back:   "",
-				Status: "",
-			},
-			old: Card{
-				ID:     1,
-				Front:  "get milk",
-				Back:   "groceries",
-				Status: Todo.String(),
-			},
-			want: Card{
-				ID:     1,
-				Front:  "strawberries",
-				Back:   "groceries",
-				Status: Todo.String(),
-			},
-		},
-	}
-	for _, tc := range tests {
-		tc.old.merge(tc.new)
-		if !reflect.DeepEqual(tc.old, tc.want) {
-			t.Fatalf("got: %#v, want %#v", tc.new, tc.want)
-		}
-	}
-}
-
 func TestGetCardsByStatus(t *testing.T) {
 	tests := []struct {
 		want Card
@@ -207,15 +120,15 @@ func TestGetCardsByStatus(t *testing.T) {
 	}
 }
 
-func setup() *CardDB {
+func setup() *CardDb {
 	path := filepath.Join(os.TempDir(), "test.db")
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	t := CardDB{db, path}
-	if !t.TableExists("cards") {
-		err := t.CreateTable()
+	t := CardDb{db}
+	if !t.tableExists() {
+		err := t.createTable()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -223,7 +136,9 @@ func setup() *CardDB {
 	return &t
 }
 
-func teardown(tDB *CardDB) {
+func teardown(tDB *CardDb) {
 	tDB.Close()
-	os.Remove(tDB.DataDir)
+	path := filepath.Join(os.TempDir(), "test.db")
+	os.Remove(path)
+
 }

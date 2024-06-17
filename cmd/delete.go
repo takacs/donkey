@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/takacs/donkey/carddb"
+	"github.com/takacs/donkey/internal/card"
 	"strconv"
 )
 
@@ -22,7 +22,7 @@ var deleteCmd = &cobra.Command{
 	Short: "delete a card based on id. get a list of ids with `donkey list`",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		carddb, err := carddb.New()
+		carddb, err := card.New()
 		if err != nil {
 			return err
 		}

@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
-	"github.com/takacs/donkey/carddb"
+	"github.com/takacs/donkey/internal/card"
 )
 
 type ListCardsModel struct {
@@ -67,7 +67,7 @@ func newListCardsModel(width, height int) ListCardsModel {
 }
 
 func getTableFromCards() (table.Model, error) {
-	carddb, err := carddb.New()
+	carddb, err := card.New()
 	if err != nil {
 		return table.Model{}, errors.New("error getting db")
 	}

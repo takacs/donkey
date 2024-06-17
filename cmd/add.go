@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/takacs/donkey/carddb"
+	"github.com/takacs/donkey/internal/card"
 )
 
 func init() {
@@ -32,7 +32,7 @@ var addCmd = &cobra.Command{
 	Short: "add a new card with an optional deck name",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		carddb, err := carddb.New()
+		carddb, err := card.New()
 		if err != nil {
 			return err
 		}
