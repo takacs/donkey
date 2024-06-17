@@ -113,7 +113,7 @@ func newReviewModel(width, height, numberOfCards int) ReviewModel {
 	}
 }
 
-func (m ReviewModel) addReview(grade review.Grade) error {
+func (m ReviewModel) addReview(grade review.Grade) {
 	reviewDb, err := review.New()
 	if err != nil {
 		log.Fatal(err)
@@ -122,6 +122,4 @@ func (m ReviewModel) addReview(grade review.Grade) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return nil
 }
