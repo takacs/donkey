@@ -37,7 +37,7 @@ type CardDb struct {
 
 func (c *CardDb) Insert(front, back, deck string) error {
 	_, err := c.db.Exec(
-		"INSERT INTO cards(front, back, deck, status, created) VALUES( ?, ?, ?, ?, ?)",
+		"INSERT INTO card(front, back, deck, status, created) VALUES( ?, ?, ?, ?, ?)",
 		front,
 		back,
 		deck,
@@ -47,7 +47,7 @@ func (c *CardDb) Insert(front, back, deck string) error {
 }
 
 func (c *CardDb) Delete(id uint) error {
-	_, err := c.db.Exec("DELETE FROM cards WHERE id = ?", id)
+	_, err := c.db.Exec("DELETE FROM card WHERE id = ?", id)
 	return err
 }
 
@@ -77,7 +77,7 @@ func (c *CardDb) Close() error {
 
 func (c *CardDb) GetCards() ([]Card, error) {
 	var cards []Card
-	rows, err := c.db.Query("SELECT * FROM cards")
+	rows, err := c.db.Query("SELECT * FROM card")
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
@@ -101,7 +101,7 @@ func (c *CardDb) GetCards() ([]Card, error) {
 
 func (c *CardDb) GetCardsByStatus(status string) ([]Card, error) {
 	var cards []Card
-	rows, err := c.db.Query("SELECT * FROM cards WHERE status = ?", status)
+	rows, err := c.db.Query("SELECT * FROM card WHERE status = ?", status)
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
 	}
@@ -125,7 +125,7 @@ func (c *CardDb) GetCardsByStatus(status string) ([]Card, error) {
 
 func (c *CardDb) GetCard(id uint) (Card, error) {
 	var card Card
-	err := c.db.QueryRow("SELECT * FROM cards WHERE id = ?", id).
+	err := c.db.QueryRow("SELECT * FROM card WHERE id = ?", id).
 		Scan(
 			&card.ID,
 			&card.Front,
@@ -138,13 +138,13 @@ func (c *CardDb) GetCard(id uint) (Card, error) {
 }
 
 func (c *CardDb) tableExists() bool {
-	if _, err := c.db.Query("SELECT * FROM cards"); err == nil {
+	if _, err := c.db.Query("SELECT * FROM card"); err == nil {
 		return true
 	}
 	return false
 }
 
 func (c *CardDb) createTable() error {
-	_, err := c.db.Exec(`CREATE TABLE "cards" ( "id" INTEGER, "front" TEXT NOT NULL, "back" TEXT, "deck" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
+	_, err := c.db.Exec(`CREATE TABLE "card" ( "id" INTEGER, "front" TEXT NOT NULL, "back" TEXT, "deck" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
 	return err
 }
