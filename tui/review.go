@@ -9,6 +9,7 @@ import (
 	lipgloss "github.com/charmbracelet/lipgloss"
 
 	"github.com/takacs/donkey/internal/card"
+	"github.com/takacs/donkey/internal/review"
 )
 
 var reviewCardStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(10, 20, 10, 20)
@@ -21,6 +22,7 @@ type ReviewModel struct {
 	cards         []card.Card
 	currentCard   int
 	flip          bool
+	numberOfCards int
 }
 
 func (m ReviewModel) Init() tea.Cmd {
@@ -37,19 +39,27 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Enter):
 			m.flip = true
 		case key.Matches(msg, m.keys.Easy):
+			m.addReview(review.Easy)
 			m.flip = false
 			m.currentCard += 1
 		case key.Matches(msg, m.keys.Good):
+			m.addReview(review.Good)
 			m.flip = false
 			m.currentCard += 1
 		case key.Matches(msg, m.keys.Hard):
+			m.addReview(review.Hard)
 			m.flip = false
 			m.currentCard += 1
 		case key.Matches(msg, m.keys.Again):
+			m.addReview(review.Again)
 			m.flip = false
 			m.currentCard += 1
 		}
 
+	}
+
+	if m.currentCard >= m.numberOfCards {
+		return InitProject(m.width, m.height)
 	}
 	return m, tea.Batch(cmds...)
 }
@@ -76,14 +86,14 @@ func (m ReviewModel) getCardView() string {
 	return cardView
 }
 
-func newReviewModel(width, height int) ReviewModel {
+func newReviewModel(width, height, numberOfCards int) ReviewModel {
 	// TODO improve init
 	carddb, err := card.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cards, err := carddb.GetCards(20)
+	cards, err := carddb.GetCards(numberOfCards)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -92,12 +102,26 @@ func newReviewModel(width, height int) ReviewModel {
 	h.ShowAll = true
 
 	return ReviewModel{
-		width:  width,
-		height: height,
-		name:   "review",
-		cards:  cards,
-		help:   h,
-		keys:   reviewKeys,
-		flip:   false,
+		width:         width,
+		height:        height,
+		name:          "review",
+		cards:         cards,
+		numberOfCards: numberOfCards,
+		help:          h,
+		keys:          reviewKeys,
+		flip:          false,
 	}
+}
+
+func (m ReviewModel) addReview(grade review.Grade) error {
+	reviewDb, err := review.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = reviewDb.Insert(m.cards[m.currentCard].ID, grade)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
 }

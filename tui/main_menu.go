@@ -84,7 +84,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "List Cards":
 				return newListCardsModel(m.width, m.height), cmd
 			case "Review":
-				return newReviewModel(m.width, m.height), cmd
+				return newReviewModel(m.width, m.height, 20), cmd
 			case "Stats":
 				return newStatsModel(m.width, m.height), cmd
 			}

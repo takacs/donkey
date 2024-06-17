@@ -28,7 +28,7 @@ type ReviewDb struct {
 	db *sql.DB
 }
 
-func (c *ReviewDb) Insert(card_id int, grade Grade) error {
+func (c *ReviewDb) Insert(card_id uint, grade Grade) error {
 	_, err := c.db.Exec(
 		"INSERT INTO review(card_id, grade, reviewed) VALUES( ?, ?, ?)",
 		card_id,
