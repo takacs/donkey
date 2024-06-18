@@ -39,25 +39,16 @@ func OpenDb() (*sql.DB, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db, err := initDatabase(path)
+	db, err := InitDatabase(path)
 	if err != nil {
 		log.Fatal("cant get stat")
 	}
 
 	return db, nil
+
 }
 
-func initDataDir(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return os.Mkdir(path, 0o750)
-		}
-		return err
-	}
-	return nil
-}
-
-func initDatabase(path string) (*sql.DB, error) {
+func InitDatabase(path string) (*sql.DB, error) {
 	dbPath := filepath.Join(path, donkeyDbName+".db")
 	_, err := os.Stat(dbPath)
 
@@ -91,6 +82,16 @@ func initDatabase(path string) (*sql.DB, error) {
 
 	// we got an error that is not "not exist" so we return it
 	return nil, err
+}
+
+func initDataDir(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return os.Mkdir(path, 0o750)
+		}
+		return err
+	}
+	return nil
 }
 
 func tableExistsInDatabase(tableName string, db *sql.DB) bool {

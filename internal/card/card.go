@@ -134,10 +134,3 @@ func (c *CardDb) GetCard(id uint) (Card, error) {
 		)
 	return card, err
 }
-
-func (c *CardDb) tableExists() bool {
-	if _, err := c.db.Query("SELECT * FROM card"); err == nil {
-		return true
-	}
-	return false
-}
