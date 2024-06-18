@@ -49,12 +49,6 @@ func New() (*ReviewDb, error) {
 		return nil, errors.New("couldn't open db")
 	}
 	cardDb := ReviewDb{db: db}
-	if !cardDb.tableExists() {
-		err := cardDb.createTable()
-		if err != nil {
-			return nil, err
-		}
-	}
 	return &cardDb, nil
 }
 
@@ -64,24 +58,4 @@ func (c *ReviewDb) Close() error {
 		return errors.New("failed closing db")
 	}
 	return nil
-}
-
-func (c *ReviewDb) tableExists() bool {
-	if _, err := c.db.Query("SELECT * FROM review"); err == nil {
-		return true
-	}
-	return false
-}
-
-func (c *ReviewDb) createTable() error {
-	_, err := c.db.Exec(`
-        CREATE TABLE "review"
-        (
-        "id" INTEGER,
-        "card_id" INTEGER,
-        "grade" INTEGER,
-        "reviewed" DATETIME,
-        PRIMARY KEY("id" AUTOINCREMENT),
-        FOREIGN KEY (card_id) REFERENCES card(id))`)
-	return err
 }

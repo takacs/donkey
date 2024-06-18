@@ -58,12 +58,6 @@ func New() (*CardDb, error) {
 		return nil, errors.New("couldn't open db")
 	}
 	cardDb := CardDb{db: db}
-	if !cardDb.tableExists() {
-		err := cardDb.createTable()
-		if err != nil {
-			return nil, err
-		}
-	}
 	return &cardDb, nil
 }
 
@@ -146,9 +140,4 @@ func (c *CardDb) tableExists() bool {
 		return true
 	}
 	return false
-}
-
-func (c *CardDb) createTable() error {
-	_, err := c.db.Exec(`CREATE TABLE "card" ( "id" INTEGER, "front" TEXT NOT NULL, "back" TEXT, "deck" TEXT, "status" TEXT, "created" DATETIME, PRIMARY KEY("id" AUTOINCREMENT))`)
-	return err
 }
