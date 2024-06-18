@@ -30,7 +30,7 @@ var reviewKeys = reviewKeyMap{
 		key.WithHelp("esc", "escape to main menu"),
 	),
 	Enter: key.NewBinding(
-		key.WithKeys("enter", "space"),
+		key.WithKeys("enter", " "),
 		key.WithHelp("enter/space", "reveal back of card"),
 	),
 	Easy: key.NewBinding(
