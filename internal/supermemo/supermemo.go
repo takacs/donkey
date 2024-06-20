@@ -62,7 +62,10 @@ func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
 		log.Fatal("query error supermemo", cardId)
 	}
 	if !rows.Next() {
-		c.Insert(cardId)
+		err := c.Insert(cardId)
+		if err != nil {
+			log.Fatal("error inserting new Supermemo", cardId)
+		}
 		rows, err = c.db.Query(query)
 		if err != nil {
 			log.Fatal("query error supermemo", cardId)
