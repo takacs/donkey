@@ -27,13 +27,19 @@ type SupermemoDb struct {
 }
 
 func (c *SupermemoDb) Insert(cardId uint) {
+	log.Print("hello")
 	_, err := c.db.Exec(
-		"INSERT INTO supermemo(card_id) VALUES( ?)",
+		"INSERT INTO supermemo(card_id, repetition, easiness_factor, interval, next_review_time) VALUES( ?, ?, ?, ?, ?)",
 		cardId,
+		0,
+		2.5,
+		0,
+		time.Time{},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Print("hello")
 }
 
 func (c *SupermemoDb) Delete(id uint) error {
@@ -53,8 +59,7 @@ func New() (*SupermemoDb, error) {
 
 func (c *SupermemoDb) Close() error {
 	if err := c.db.Close(); err != nil {
-		log.Fatal("failed closing db")
-		return errors.New("failed closing db")
+		log.Fatal(err)
 	}
 	return nil
 }
@@ -62,18 +67,30 @@ func (c *SupermemoDb) Close() error {
 func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
 	cardIdStr := strconv.Itoa(int(cardId))
 	query := fmt.Sprintf("SELECT * FROM supermemo WHERE card_id = " + cardIdStr)
-	log.Print(query)
 	rows, err := c.db.Query(query)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	if !rows.Next() {
+		log.Printf("inserting card id %v", cardId)
 		c.Insert(cardId)
 		rows, err = c.db.Query(query)
 		if err != nil {
 			log.Fatal("query error supermemo", cardId)
 		}
 	}
+
+	rows.Close()
+
+	// TODO just look at it
+	query = fmt.Sprintf("SELECT * FROM supermemo WHERE card_id = " + cardIdStr)
+	rows, err = c.db.Query(query)
+	defer rows.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var supermemo Supermemo
 	for rows.Next() {
 		err = rows.Scan(
@@ -85,9 +102,10 @@ func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
 			&supermemo.NextReview,
 		)
 		if err != nil {
-			log.Fatal("cant scan query response from supermemo table")
+			log.Fatal(err)
 		}
 	}
+	log.Printf("returned %v", supermemo)
 	return supermemo
 }
 
@@ -95,7 +113,7 @@ func (s SupermemoDb) updateSupermemo(supermemoId uint, n, I int, EF float64) {
 	interval := time.Hour * 24 * time.Duration(I)
 	nextReviewTime := time.Now().Add(interval)
 	_, err := s.db.Exec(
-		"UPDATE supermemo SET repetition = ?, back = ?, deck = ?, status = ? WHERE id = ?",
+		"UPDATE supermemo SET repetition = ?, interval = ?, easiness_factor = ?, next_review_time = ? WHERE id = ?",
 		n,
 		I,
 		EF,
@@ -105,6 +123,7 @@ func (s SupermemoDb) updateSupermemo(supermemoId uint, n, I int, EF float64) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("updated %v", supermemoId)
 }
 
 func UpdateCardParams(cardId uint, grade review.Grade) error {
@@ -116,6 +135,7 @@ func UpdateCardParams(cardId uint, grade review.Grade) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("calculating new params for card %v\n", cardId)
 
 	var n int
 	var I int
@@ -136,12 +156,14 @@ func UpdateCardParams(cardId uint, grade review.Grade) error {
 			I = int(float64(supermemo.Interval) * supermemo.EasinessFactor)
 		}
 	}
+	n++
 
 	gradeValue := int(grade)
 	EF = supermemo.EasinessFactor + (0.1 - float64(5-gradeValue)*(0.08+float64(5-gradeValue)*0.02))
 	if EF > 1.3 {
 		EF = 1.3
 	}
+	log.Printf("new params: n=%v, I=%v, EF=%v\n", n, I, EF)
 
 	supermemoDb.updateSupermemo(supermemo.ID, n, I, EF)
 	return nil

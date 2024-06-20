@@ -37,6 +37,7 @@ var supermemoSchema = `
 	"repetition" INTEGER,
 	"easiness_factor" REAL,
 	"interval" INTEGER,
+	"next_review_time" DATETIME,
         PRIMARY KEY("id" AUTOINCREMENT),
         FOREIGN KEY (card_id) REFERENCES card(id)
 	)`
