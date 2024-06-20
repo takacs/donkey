@@ -77,6 +77,10 @@ func InitDatabase(path string) (*sql.DB, error) {
 			createTable(reviewTable, reviewSchema, db)
 		}
 
+		if exists := tableExistsInDatabase(supermemoTable, db); !exists {
+			createTable(reviewTable, supermemoSchema, db)
+		}
+
 		return db, nil
 	}
 

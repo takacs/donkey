@@ -26,3 +26,17 @@ var reviewSchema = `
         PRIMARY KEY("id" AUTOINCREMENT),
         FOREIGN KEY (card_id) REFERENCES card(id)
 	)`
+
+var supermemoTable = "supermemo"
+
+var supermemoSchema = `
+	CREATE TABLE "supermemo"
+        (
+        "id" INTEGER,
+        "card_id" INTEGER,
+	"repetition" INTEGER,
+	"easiness_factor" REAL,
+	"interval" INTEGER,
+        PRIMARY KEY("id" AUTOINCREMENT),
+        FOREIGN KEY (card_id) REFERENCES card(id)
+	)`
