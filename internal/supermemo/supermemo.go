@@ -81,7 +81,10 @@ func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
 		}
 	}
 
-	rows.Close()
+	err = rows.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// TODO just look at it
 	query = fmt.Sprintf("SELECT * FROM supermemo WHERE card_id = " + cardIdStr)
