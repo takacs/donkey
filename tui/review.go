@@ -10,6 +10,7 @@ import (
 
 	"github.com/takacs/donkey/internal/card"
 	"github.com/takacs/donkey/internal/review"
+	"github.com/takacs/donkey/internal/supermemo"
 )
 
 var reviewCardStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(10, 20, 10, 20)
@@ -39,21 +40,13 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Enter):
 			m.flip = true
 		case key.Matches(msg, m.keys.Easy):
-			m.addReview(review.Easy)
-			m.flip = false
-			m.currentCard += 1
+			m.handleGrade(review.Easy)
 		case key.Matches(msg, m.keys.Good):
-			m.addReview(review.Good)
-			m.flip = false
-			m.currentCard += 1
+			m.handleGrade(review.Good)
 		case key.Matches(msg, m.keys.Hard):
-			m.addReview(review.Hard)
-			m.flip = false
-			m.currentCard += 1
+			m.handleGrade(review.Hard)
 		case key.Matches(msg, m.keys.Again):
-			m.addReview(review.Again)
-			m.flip = false
-			m.currentCard += 1
+			m.handleGrade(review.Again)
 		}
 
 	}
@@ -122,4 +115,11 @@ func (m ReviewModel) addReview(grade review.Grade) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (m *ReviewModel) handleGrade(grade review.Grade) {
+	m.addReview(grade)
+	supermemo.UpdateCardParams(m.cards[m.currentCard].ID, grade)
+	m.flip = false
+	m.currentCard += 1
 }
