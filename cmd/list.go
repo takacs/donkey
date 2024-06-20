@@ -27,6 +27,7 @@ var listCmd = &cobra.Command{
 			return err
 		}
 		fmt.Print(setupTable(cards))
+		fmt.Print("\n")
 		return nil
 	},
 }

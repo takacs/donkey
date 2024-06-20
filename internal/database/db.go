@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	gap "github.com/muesli/go-app-paths"
 	"log"
@@ -21,7 +22,6 @@ func GetDbPath() (string, error) {
 	}
 
 	var dir string
-	// TODO i did it like this but don't remember why, understand soon
 	if len(dirs) > 0 {
 		dir = dirs[0]
 	} else {
@@ -39,16 +39,49 @@ func OpenDb() (*sql.DB, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db, err := sql.Open("sqlite3", filepath.Join(path, donkeyDbName+".db"))
+	db, err := InitDatabase(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("cant get stat")
 	}
 
-	_, err = db.Exec("PRAGMA foreign_keys = ON;")
-	if err != nil {
-		log.Fatal(err)
-	}
 	return db, nil
+
+}
+
+func InitDatabase(path string) (*sql.DB, error) {
+	dbPath := filepath.Join(path, donkeyDbName+".db")
+	_, err := os.Stat(dbPath)
+
+	// no error means db exists
+	// we assume it was set up correctly for now
+	if err == nil {
+		db, err := sql.Open("sqlite3", dbPath)
+		if err != nil {
+			log.Fatal("can't open db")
+		}
+		return db, nil
+	}
+
+	// if we get a not exists error we init db
+	if os.IsNotExist(err) {
+		db, err := sql.Open("sqlite3", dbPath)
+		if err != nil {
+			log.Fatal("could not create")
+		}
+
+		if exists := tableExistsInDatabase(cardTable, db); !exists {
+			createTable(cardTable, cardSchema, db)
+		}
+
+		if exists := tableExistsInDatabase(reviewTable, db); !exists {
+			createTable(reviewTable, reviewSchema, db)
+		}
+
+		return db, nil
+	}
+
+	// we got an error that is not "not exist" so we return it
+	return nil, err
 }
 
 func initDataDir(path string) error {
@@ -59,4 +92,18 @@ func initDataDir(path string) error {
 		return err
 	}
 	return nil
+}
+
+func tableExistsInDatabase(tableName string, db *sql.DB) bool {
+	if _, err := db.Query(fmt.Sprintf("SELECT * FROM %v", tableName)); err == nil {
+		return true
+	}
+	return false
+}
+
+func createTable(name, schema string, db *sql.DB) {
+	_, err := db.Exec(schema)
+	if err != nil {
+		log.Fatalf("couldn't create %v table", name)
+	}
 }

@@ -1,12 +1,13 @@
 package card
 
 import (
-	"database/sql"
 	"log"
 	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/takacs/donkey/internal/database"
 )
 
 func TestDelete(t *testing.T) {
@@ -15,14 +16,12 @@ func TestDelete(t *testing.T) {
 	}{
 		{
 			want: Card{
-				ID:     1,
-				Front:  "anki",
+				ID: 1, Front: "anki",
 				Back:   "Anki is a program which makes remembering things easy.",
 				Deck:   "default",
 				Status: "todo",
 			},
-		},
-	}
+		}}
 	for _, tc := range tests {
 		t.Run(tc.want.Front, func(t *testing.T) {
 			tDB := setup()
@@ -121,24 +120,18 @@ func TestGetCardsByStatus(t *testing.T) {
 }
 
 func setup() *CardDb {
-	path := filepath.Join(os.TempDir(), "test.db")
-	db, err := sql.Open("sqlite3", path)
+	path := filepath.Join(os.TempDir())
+	db, err := database.InitDatabase(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 	t := CardDb{db}
-	if !t.tableExists() {
-		err := t.createTable()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 	return &t
 }
 
 func teardown(tDB *CardDb) {
 	tDB.Close()
-	path := filepath.Join(os.TempDir(), "test.db")
+	path := filepath.Join(os.TempDir(), "donkey.db")
 	os.Remove(path)
 
 }
