@@ -7,13 +7,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/takacs/donkey/internal/database"
 	"log"
+	"strconv"
 	"time"
 )
 
 type Supermemo struct {
 	ID             uint
 	CardID         uint
-	Repetition     uint
+	Repetition     int
 	EasinessFactor int
 	Interval       time.Time
 }
@@ -54,7 +55,8 @@ func (c *SupermemoDb) Close() error {
 }
 
 func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
-	query := fmt.Sprintf("SELECT * FROM supermemo WHERE card_id = %v", cardId)
+	cardIdStr := strconv.Itoa(int(cardId))
+	query := fmt.Sprintf("SELECT * FROM supermemo WHERE card_id = " + cardIdStr)
 	rows, err := c.db.Query(query)
 	if err != nil {
 		log.Fatalf("no entry for cardid %v in supermemo db", cardId)
