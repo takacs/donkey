@@ -119,7 +119,10 @@ func (m ReviewModel) addReview(grade review.Grade) {
 
 func (m *ReviewModel) handleGrade(grade review.Grade) {
 	m.addReview(grade)
-	supermemo.UpdateCardParams(m.cards[m.currentCard].ID, grade)
+	err := supermemo.UpdateCardParams(m.cards[m.currentCard].ID, grade)
+	if err != nil {
+		log.Fatal(err)
+	}
 	m.flip = false
 	m.currentCard += 1
 }
