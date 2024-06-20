@@ -59,7 +59,14 @@ func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
 	query := fmt.Sprintf("SELECT * FROM supermemo WHERE card_id = " + cardIdStr)
 	rows, err := c.db.Query(query)
 	if err != nil {
-		log.Fatalf("no entry for cardid %v in supermemo db", cardId)
+		log.Fatal("query error supermemo", cardId)
+	}
+	if !rows.Next() {
+		c.Insert(cardId)
+		rows, err = c.db.Query(query)
+		if err != nil {
+			log.Fatal("query error supermemo", cardId)
+		}
 	}
 	var supermemo Supermemo
 	for rows.Next() {
