@@ -21,6 +21,11 @@ func TestInitDatabase(t *testing.T) {
 	if !exists {
 		log.Fatal("review table wasn't created in db")
 	}
+
+	exists = tableExistsInDatabase(supermemoTable, db)
+	if !exists {
+		log.Fatal("supermemo table wasn't created in db")
+	}
 }
 
 func TestTableExistsInDatabase(t *testing.T) {
