@@ -105,6 +105,11 @@ func newReviewModel(width, height, numberOfCards int) ReviewModel {
 		log.Fatal(err)
 	}
 
+	cardCount := numberOfCards
+	if len(cards) < numberOfCards {
+		cardCount = len(cards)
+	}
+
 	h := help.New()
 	h.ShowAll = true
 
@@ -113,7 +118,7 @@ func newReviewModel(width, height, numberOfCards int) ReviewModel {
 		height:        height,
 		name:          "review",
 		cards:         cards,
-		numberOfCards: numberOfCards,
+		numberOfCards: cardCount,
 		help:          h,
 		keys:          reviewKeys,
 		flip:          false,

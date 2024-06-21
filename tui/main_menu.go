@@ -38,7 +38,7 @@ func createTable() table.Model {
 		{"Review"},
 		{"Add Card"},
 		{"List Cards"},
-		{"Stats"},
+		{"Settings"},
 	}
 	t := table.New(
 		table.WithColumns(columns),

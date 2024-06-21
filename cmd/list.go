@@ -41,7 +41,6 @@ func setupTable(cards []card.Card) *table.Table {
 			card.Front,
 			card.Back,
 			card.Deck,
-			card.Status,
 			card.Created.Format("2006-01-02"),
 		})
 	}
