@@ -26,7 +26,7 @@ func TestDelete(t *testing.T) {
 		t.Run(tc.want.Front, func(t *testing.T) {
 			tDB := setup()
 			defer teardown(tDB)
-			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
+			if _, err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("unable to insert cards: %v", err)
 			}
 			cards, err := tDB.GetCards(0)
@@ -68,7 +68,7 @@ func TestGetCard(t *testing.T) {
 		t.Run(tc.want.Front, func(t *testing.T) {
 			tDB := setup()
 			defer teardown(tDB)
-			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
+			if _, err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
 			Card, err := tDB.GetCard(tc.want.ID)
@@ -101,7 +101,7 @@ func TestGetCardsByStatus(t *testing.T) {
 		t.Run(tc.want.Front, func(t *testing.T) {
 			tDB := setup()
 			defer teardown(tDB)
-			if err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
+			if _, err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("we ran into an unexpected error: %v", err)
 			}
 			Cards, err := tDB.GetCardsByStatus(tc.want.Status)

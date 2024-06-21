@@ -49,7 +49,7 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if err := carddb.Insert(front, back, deck); err != nil {
+		if _, err := carddb.Insert(front, back, deck); err != nil {
 			return err
 		}
 		return nil

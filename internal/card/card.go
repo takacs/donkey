@@ -35,15 +35,24 @@ type CardDb struct {
 	db *sql.DB
 }
 
-func (c *CardDb) Insert(front, back, deck string) error {
-	_, err := c.db.Exec(
+func (c *CardDb) Insert(front, back, deck string) (uint, error) {
+	result, err := c.db.Exec(
 		"INSERT INTO card(front, back, deck, status, created) VALUES( ?, ?, ?, ?, ?)",
 		front,
 		back,
 		deck,
 		Todo.String(),
 		time.Now())
-	return err
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lastId, err := result.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return uint(lastId), err
 }
 
 func (c *CardDb) Delete(id uint) error {

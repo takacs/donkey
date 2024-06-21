@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/takacs/donkey/internal/card"
+	"github.com/takacs/donkey/internal/supermemo"
 )
 
 func init() {
@@ -57,10 +58,16 @@ func loadFileToDb(path string, deck string, cdb *card.CardDb) {
 			continue
 		}
 		fields := strings.Split(line, "\t")
-		err := cdb.Insert(fields[0], fields[1], deck)
+		cardId, err := cdb.Insert(fields[0], fields[1], deck)
 		if err != nil {
 			log.Printf("failed importing %v | %v", fields[0], fields[1])
 		}
+		supermemoDb, err := supermemo.New()
+		if err != nil {
+			log.Fatal(err)
+		}
+		supermemoDb.Insert(cardId)
+
 		inserted++
 	}
 

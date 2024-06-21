@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -9,6 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
 	"github.com/takacs/donkey/internal/card"
+	"github.com/takacs/donkey/internal/supermemo"
 )
 
 const (
@@ -121,10 +123,17 @@ func (m *AddCardModel) submitCard() {
 		fmt.Println("couldn't open db")
 	}
 	defer carddb.Close()
-	err = carddb.Insert(m.inputs[front].Value(), m.inputs[back].Value(), m.inputs[deck].Value())
+	cardId, err := carddb.Insert(m.inputs[front].Value(), m.inputs[back].Value(), m.inputs[deck].Value())
 	if err != nil {
-		fmt.Println("couldn't instert card")
+		log.Fatal(err)
 	}
+
+	supermemodb, err := supermemo.New()
+	if err != nil {
+		fmt.Println("couldn't open db")
+	}
+	defer supermemodb.Close()
+	supermemodb.Insert(cardId)
 
 	m.inputs = defaultInputs(0)
 	m.inserted = "Inserted!"
