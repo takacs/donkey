@@ -33,7 +33,7 @@ type AddCardModel struct {
 	inputs        []textinput.Model
 	focus         int
 	inserted      string
-	keys          keyMap
+	keys          addCardKeyMap
 	help          help.Model
 	name          string
 }
@@ -47,11 +47,11 @@ func (m AddCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Exit):
+		case key.Matches(msg, m.keys.MainMenu):
 			return InitProject(m.width, m.height)
-		case key.Matches(msg, m.keys.Tab):
+		case key.Matches(msg, m.keys.Next):
 			m.nextFocus()
-		case key.Matches(msg, m.keys.Enter):
+		case key.Matches(msg, m.keys.Submit):
 			m.submitCard()
 		}
 	}
@@ -91,12 +91,13 @@ func (m AddCardModel) View() string {
 		insertedStyle.Render(m.inserted),
 	)
 
+	helpView := m.help.View(m.keys)
 	return lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		baseStyle.Render(formView+"\n"))
+		baseStyle.Render(formView+"\n"+helpView))
 }
 
 func (m *AddCardModel) nextFocus() {
@@ -166,6 +167,6 @@ func newAddCardModel(width, height int) AddCardModel {
 		inserted: "",
 		name:     "add card",
 		help:     help.New(),
-		keys:     keys,
+		keys:     addCardKeys,
 	}
 }
