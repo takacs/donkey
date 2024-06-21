@@ -10,7 +10,7 @@ import (
 )
 
 func StartTea() error {
-	if f, err := tea.LogToFile("debug.log", "help"); err != nil {
+	if f, err := tea.LogToFile("debug.log", "donkey"); err != nil {
 		fmt.Println("Couldn't open a file for logging:", err)
 		os.Exit(1)
 	} else {
