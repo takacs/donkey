@@ -14,8 +14,6 @@ import (
 	"github.com/takacs/donkey/internal/supermemo"
 )
 
-var reviewCardStyle = lipgloss.NewStyle().Padding(10, 20, 10, 20)
-
 type ReviewModel struct {
 	width, height int
 	keys          reviewKeyMap
