@@ -48,7 +48,7 @@ func (m AddCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.Exit):
-			return m, tea.Quit
+			return InitProject(m.width, m.height)
 		case key.Matches(msg, m.keys.Tab):
 			m.nextFocus()
 		case key.Matches(msg, m.keys.Enter):
@@ -62,8 +62,6 @@ func (m AddCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AddCardModel) View() string {
-	helpView := m.help.View(m.keys)
-
 	formView := fmt.Sprintf(
 		`
  %s
@@ -98,7 +96,7 @@ func (m AddCardModel) View() string {
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		baseStyle.Render(formView+"\n"+helpView))
+		baseStyle.Render(formView+"\n"))
 }
 
 func (m *AddCardModel) nextFocus() {
