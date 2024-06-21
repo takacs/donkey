@@ -9,7 +9,6 @@ var cardSchema = `
 	"front" TEXT NOT NULL,
 	"back" TEXT,
 	"deck" TEXT,
-	"status" TEXT,
 	"created" DATETIME,
 	PRIMARY KEY("id" AUTOINCREMENT)
 	)`
