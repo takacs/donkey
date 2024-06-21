@@ -80,13 +80,18 @@ func (m ReviewModel) getCardView() string {
 }
 
 func newReviewModel(width, height, numberOfCards int) ReviewModel {
+	supermemodb, err := supermemo.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	cardIds := supermemodb.GetXSoonestReviewTimeCardIds(numberOfCards)
 	// TODO improve init
 	carddb, err := card.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cards, err := carddb.GetCards(numberOfCards)
+	cards, err := carddb.GetCardsFromIds(cardIds)
 	if err != nil {
 		log.Fatal(err)
 	}

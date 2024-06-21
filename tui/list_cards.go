@@ -71,7 +71,7 @@ func getTableFromCards() (table.Model, error) {
 	if err != nil {
 		return table.Model{}, errors.New("error getting db")
 	}
-	cards, err := carddb.GetCards(0)
+	cards, err := carddb.GetXCards(0)
 	if err != nil {
 		return table.Model{}, errors.New("error getting cards")
 	}

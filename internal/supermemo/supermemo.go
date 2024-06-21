@@ -111,6 +111,29 @@ func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
 	return supermemo
 }
 
+func (c *SupermemoDb) GetXSoonestReviewTimeCardIds(x int) []uint {
+	xStr := strconv.Itoa(x)
+	query := fmt.Sprintf("SELECT card_id FROM supermemo ORDER BY next_review_time LIMIT " + xStr)
+	rows, err := c.db.Query(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var cardId uint
+	cardIds := make([]uint, x)
+	for rows.Next() {
+		err = rows.Scan(
+			&cardId,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		cardIds = append(cardIds, cardId)
+	}
+
+	return cardIds
+}
+
 func (s SupermemoDb) updateSupermemo(supermemoId uint, n, I int, EF float64) {
 	interval := time.Hour * 24 * time.Duration(I)
 	nextReviewTime := time.Now().Add(interval)

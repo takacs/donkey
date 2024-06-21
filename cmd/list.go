@@ -22,7 +22,7 @@ var listCmd = &cobra.Command{
 			return err
 		}
 		defer carddb.Close()
-		cards, err := carddb.GetCards(0)
+		cards, err := carddb.GetXCards(0)
 		if err != nil {
 			return err
 		}

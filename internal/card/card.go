@@ -78,12 +78,42 @@ func (c *CardDb) Close() error {
 	return nil
 }
 
-func (c *CardDb) GetCards(limit int) ([]Card, error) {
+func (c *CardDb) GetXCards(limit int) ([]Card, error) {
 	var cards []Card
 	query := "SELECT * FROM card "
 	if limit != 0 {
 		query += fmt.Sprintf("LIMIT %v", limit)
 	}
+	rows, err := c.db.Query(query)
+	if err != nil {
+		return cards, fmt.Errorf("unable to get values: %w", err)
+	}
+	for rows.Next() {
+		var card Card
+		err = rows.Scan(
+			&card.ID,
+			&card.Front,
+			&card.Back,
+			&card.Deck,
+			&card.Status,
+			&card.Created,
+		)
+		if err != nil {
+			return cards, err
+		}
+		cards = append(cards, card)
+	}
+	return cards, err
+}
+
+func (c *CardDb) GetCardsFromIds(cardIds []uint) ([]Card, error) {
+	var cards []Card
+	query := "SELECT * FROM card WHERE id in ("
+	for _, id := range cardIds {
+		query += fmt.Sprintf("%v,", id)
+	}
+	// TODO this is so there's no comma at the end
+	query += fmt.Sprintf("-1)")
 	rows, err := c.db.Query(query)
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
