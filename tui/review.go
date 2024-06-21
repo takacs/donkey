@@ -2,6 +2,7 @@ package tui
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -12,8 +13,6 @@ import (
 	"github.com/takacs/donkey/internal/review"
 	"github.com/takacs/donkey/internal/supermemo"
 )
-
-var reviewCardStyle = lipgloss.NewStyle().Padding(10, 20, 10, 20)
 
 type ReviewModel struct {
 	width, height int
@@ -37,7 +36,7 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
 			return InitProject(m.width, m.height)
-		case key.Matches(msg, m.keys.Enter):
+		case key.Matches(msg, m.keys.Space):
 			m.flip = true
 		case key.Matches(msg, m.keys.Easy):
 			m.handleGrade(review.Easy)
@@ -54,29 +53,39 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.currentCard >= m.numberOfCards {
 		return InitProject(m.width, m.height)
 	}
+
 	return m, tea.Batch(cmds...)
 }
+
 func (m ReviewModel) View() string {
 	helpView := m.help.View(m.keys)
 
-	cardView := m.getCardView()
+	cardView := lipgloss.NewStyle().
+		Align(lipgloss.Center).
+		Bold(true).
+		Foreground(lipgloss.Color(primaryColor)).
+		Render(m.cards[m.currentCard].Front) + "\n\n"
+	if m.flip {
+		cardViewBack := lipgloss.NewStyle().
+			Align(lipgloss.Center).
+			Bold(false).
+			Foreground(lipgloss.Color("231")).
+			Render(m.cards[m.currentCard].Back)
+		cardView += cardViewBack + "\n\n"
+	} else {
+		cardView += lipgloss.NewStyle().Align(lipgloss.Center).Render("\n\n")
+	}
+	cStr := strconv.Itoa(m.currentCard)
+	nStr := strconv.Itoa(m.numberOfCards)
+
+	counter := lipgloss.NewStyle().Align(lipgloss.Center).Foreground(lipgloss.Color(secondaryColor)).Render(cStr + " / " + nStr + "\n\n")
 
 	return lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		reviewCardStyle.Render(cardView)+"\n"+helpView)
-}
-
-func (m ReviewModel) getCardView() string {
-	centerStyle := lipgloss.NewStyle().Align(lipgloss.Center)
-	cardView := centerStyle.Bold(true).Foreground(lipgloss.Color(primaryColor)).Render(m.cards[m.currentCard].Front) + "\n\n"
-
-	if m.flip {
-		cardView = cardView + lipgloss.NewStyle().Bold(false).Foreground(lipgloss.Color("231")).Render(m.cards[m.currentCard].Back)
-	}
-	return cardView
+		cardView+counter+helpView)
 }
 
 func newReviewModel(width, height, numberOfCards int) ReviewModel {
@@ -129,5 +138,5 @@ func (m *ReviewModel) handleGrade(grade review.Grade) {
 		log.Fatal(err)
 	}
 	m.flip = false
-	m.currentCard += 1
+	m.currentCard++
 }

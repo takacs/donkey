@@ -6,7 +6,7 @@ import (
 
 type reviewKeyMap struct {
 	MainMenu key.Binding
-	Enter    key.Binding
+	Space    key.Binding
 	Again    key.Binding
 	Hard     key.Binding
 	Good     key.Binding
@@ -14,13 +14,16 @@ type reviewKeyMap struct {
 }
 
 func (k reviewKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.MainMenu, k.Enter, k.Again, k.Hard, k.Good, k.Easy}
+	return []key.Binding{k.MainMenu, k.Space, k.Again, k.Hard, k.Good, k.Easy}
 }
 
 func (k reviewKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Easy, k.Good, k.Hard, k.Again},
-		{k.Enter, k.MainMenu},
+		{k.Easy},
+		{k.Good},
+		{k.Hard},
+		{k.Again},
+		{k.Space},
 	}
 }
 
@@ -29,9 +32,9 @@ var reviewKeys = reviewKeyMap{
 		key.WithKeys("esc"),
 		key.WithHelp("esc", "escape to main menu"),
 	),
-	Enter: key.NewBinding(
-		key.WithKeys("enter", " "),
-		key.WithHelp("enter/space", "reveal back of card"),
+	Space: key.NewBinding(
+		key.WithKeys("space", " "),
+		key.WithHelp("space", "reveal back of card"),
 	),
 	Easy: key.NewBinding(
 		key.WithKeys("1"),
