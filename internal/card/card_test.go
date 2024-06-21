@@ -29,7 +29,7 @@ func TestDelete(t *testing.T) {
 			if _, err := tDB.Insert(tc.want.Front, tc.want.Back, tc.want.Deck); err != nil {
 				t.Fatalf("unable to insert cards: %v", err)
 			}
-			cards, err := tDB.GetCards(0)
+			cards, err := tDB.GetXCards(0)
 			if err != nil {
 				t.Fatalf("unable to get cards: %v", err)
 			}
@@ -40,7 +40,7 @@ func TestDelete(t *testing.T) {
 			if err := tDB.Delete(1); err != nil {
 				t.Fatalf("unable to delete cards: %v", err)
 			}
-			cards, err = tDB.GetCards(0)
+			cards, err = tDB.GetXCards(0)
 			if err != nil {
 				t.Fatalf("unable to get cards: %v", err)
 			}
