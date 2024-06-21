@@ -29,10 +29,8 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.MainMenu):
-			return InitProject(m.width, m.height)
 		case key.Matches(msg, m.keys.Exit):
-			return m, tea.Quit
+			return InitProject(m.width, m.height)
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -51,7 +49,7 @@ func (m ListCardsModel) View() string {
 }
 
 func newListCardsModel(width, height int) ListCardsModel {
-	table, err := getTableFromCards()
+	table, err := getTableFromCards(width, height)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
@@ -66,7 +64,7 @@ func newListCardsModel(width, height int) ListCardsModel {
 	}
 }
 
-func getTableFromCards() (table.Model, error) {
+func getTableFromCards(width, height int) (table.Model, error) {
 	carddb, err := card.New()
 	if err != nil {
 		return table.Model{}, errors.New("error getting db")
@@ -78,9 +76,9 @@ func getTableFromCards() (table.Model, error) {
 
 	// table setup
 	columns := []table.Column{
-		{Title: "Front", Width: 50},
-		{Title: "Back", Width: 50},
-		{Title: "Deck", Width: 15},
+		{Title: "Front", Width: int(float32(width) * 0.425)},
+		{Title: "Back", Width: int(float32(width) * 0.425)},
+		{Title: "Deck", Width: int(float32(width) * 0.05)},
 	}
 
 	rows := []table.Row{}
@@ -92,17 +90,16 @@ func getTableFromCards() (table.Model, error) {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithHeight(7),
+		table.WithHeight(int(float32(height)*0.8)),
 	)
 	s := table.DefaultStyles()
 	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
+		Bold(true).
+		PaddingBottom(1).
+		Foreground(lipgloss.Color(primaryColor))
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
+		Foreground(lipgloss.Color("#000000")).
+		Background(lipgloss.Color(secondaryColor)).
 		Bold(false)
 	t.SetStyles(s)
 

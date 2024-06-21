@@ -2,18 +2,17 @@ package tui
 
 import (
 	"fmt"
-	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
 )
 
 var baseStyle = lipgloss.NewStyle()
+var primaryColor = "#f1b376"
+var secondaryColor = "#abaf74"
 
 type Model struct {
 	width, height int
-	keys          keyMap
-	help          help.Model
 	table         table.Model
 }
 
@@ -21,8 +20,6 @@ func InitProject(width, height int) (tea.Model, tea.Cmd) {
 	m := Model{
 		width:  width,
 		height: height,
-		help:   help.New(),
-		keys:   keys,
 		table:  createTable(),
 	}
 	return m, func() tea.Msg { return "hi" }
@@ -38,27 +35,26 @@ func createTable() table.Model {
 	}
 
 	rows := []table.Row{
+		{"Review"},
 		{"Add Card"},
 		{"List Cards"},
-		{"Review"},
 		{"Stats"},
 	}
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithHeight(7),
+		table.WithHeight(12),
 	)
 	s := table.DefaultStyles()
 	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
+		Bold(true).
+		PaddingBottom(2).
+		Foreground(lipgloss.Color(primaryColor))
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
+		Foreground(lipgloss.Color(secondaryColor)).
 		Bold(false)
+	s.Cell = s.Cell.Height(2).Align(lipgloss.Center).Padding(0, 1)
 	t.SetStyles(s)
 
 	return t
@@ -95,14 +91,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	helpView := m.help.View(m.keys)
 
 	style := lipgloss.Place(
 		m.width,
 		m.height,
+		lipgloss.Center-0.02,
 		lipgloss.Center,
-		lipgloss.Center,
-		baseStyle.Render(m.table.View())+"\n"+helpView)
+		baseStyle.Render(m.table.View())+"\n")
 	fmt.Printf("%v", style)
 	return style
 }

@@ -20,19 +20,12 @@ const (
 )
 
 const (
-	hotPink  = lipgloss.Color("#FF06B7")
-	darkGray = lipgloss.Color("#767676")
-	green    = lipgloss.Color("#55FF33")
-)
-
-const (
 	formWidth = 50
 )
 
 var (
-	inputStyle    = lipgloss.NewStyle().Foreground(hotPink)
-	continueStyle = lipgloss.NewStyle().Foreground(darkGray)
-	insertedStyle = lipgloss.NewStyle().Foreground(green)
+	inputStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(primaryColor))
+	insertedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(secondaryColor))
 )
 
 type AddCardModel struct {
@@ -55,7 +48,7 @@ func (m AddCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.Exit):
-			return m, tea.Quit
+			return InitProject(m.width, m.height)
 		case key.Matches(msg, m.keys.Tab):
 			m.nextFocus()
 		case key.Matches(msg, m.keys.Enter):
@@ -69,11 +62,8 @@ func (m AddCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AddCardModel) View() string {
-	helpView := m.help.View(m.keys)
-
 	formView := fmt.Sprintf(
-		` Add Card
-
+		`
  %s
 
  %s
@@ -91,7 +81,6 @@ func (m AddCardModel) View() string {
 
  %s
 
- %s
 `,
 		inputStyle.Width(formWidth).Render("Front"),
 		m.inputs[front].View(),
@@ -100,7 +89,6 @@ func (m AddCardModel) View() string {
 		inputStyle.Width(formWidth).Render("Deck"),
 		m.inputs[deck].View(),
 		insertedStyle.Render(m.inserted),
-		continueStyle.Render("Continue ->"),
 	)
 
 	return lipgloss.Place(
@@ -108,7 +96,7 @@ func (m AddCardModel) View() string {
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		baseStyle.Render(formView+"\n"+helpView))
+		baseStyle.Render(formView+"\n"))
 }
 
 func (m *AddCardModel) nextFocus() {

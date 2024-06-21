@@ -13,7 +13,7 @@ import (
 	"github.com/takacs/donkey/internal/supermemo"
 )
 
-var reviewCardStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(10, 20, 10, 20)
+var reviewCardStyle = lipgloss.NewStyle().Padding(10, 20, 10, 20)
 
 type ReviewModel struct {
 	width, height int
@@ -71,10 +71,10 @@ func (m ReviewModel) View() string {
 
 func (m ReviewModel) getCardView() string {
 	centerStyle := lipgloss.NewStyle().Align(lipgloss.Center)
-	cardView := centerStyle.Render(m.cards[m.currentCard].Front) + "\n"
+	cardView := centerStyle.Bold(true).Foreground(lipgloss.Color(primaryColor)).Render(m.cards[m.currentCard].Front) + "\n\n"
+
 	if m.flip {
-		cardView = cardView + centerStyle.Render("-----") + "\n"
-		cardView = cardView + centerStyle.Render(m.cards[m.currentCard].Back)
+		cardView = cardView + lipgloss.NewStyle().Bold(false).Foreground(lipgloss.Color("231")).Render(m.cards[m.currentCard].Back)
 	}
 	return cardView
 }
