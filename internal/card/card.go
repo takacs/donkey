@@ -35,15 +35,24 @@ type CardDb struct {
 	db *sql.DB
 }
 
-func (c *CardDb) Insert(front, back, deck string) error {
-	_, err := c.db.Exec(
+func (c *CardDb) Insert(front, back, deck string) (uint, error) {
+	result, err := c.db.Exec(
 		"INSERT INTO card(front, back, deck, status, created) VALUES( ?, ?, ?, ?, ?)",
 		front,
 		back,
 		deck,
 		Todo.String(),
 		time.Now())
-	return err
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lastId, err := result.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return uint(lastId), err
 }
 
 func (c *CardDb) Delete(id uint) error {
@@ -69,12 +78,42 @@ func (c *CardDb) Close() error {
 	return nil
 }
 
-func (c *CardDb) GetCards(limit int) ([]Card, error) {
+func (c *CardDb) GetXCards(limit int) ([]Card, error) {
 	var cards []Card
 	query := "SELECT * FROM card "
 	if limit != 0 {
 		query += fmt.Sprintf("LIMIT %v", limit)
 	}
+	rows, err := c.db.Query(query)
+	if err != nil {
+		return cards, fmt.Errorf("unable to get values: %w", err)
+	}
+	for rows.Next() {
+		var card Card
+		err = rows.Scan(
+			&card.ID,
+			&card.Front,
+			&card.Back,
+			&card.Deck,
+			&card.Status,
+			&card.Created,
+		)
+		if err != nil {
+			return cards, err
+		}
+		cards = append(cards, card)
+	}
+	return cards, err
+}
+
+func (c *CardDb) GetCardsFromIds(cardIds []uint) ([]Card, error) {
+	var cards []Card
+	query := "SELECT * FROM card WHERE id in ("
+	for _, id := range cardIds {
+		query += fmt.Sprintf("%v,", id)
+	}
+	// TODO this is so there's no comma at the end
+	query += "-1)"
 	rows, err := c.db.Query(query)
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
