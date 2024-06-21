@@ -113,7 +113,7 @@ func (c *CardDb) GetCardsFromIds(cardIds []uint) ([]Card, error) {
 		query += fmt.Sprintf("%v,", id)
 	}
 	// TODO this is so there's no comma at the end
-	query += fmt.Sprintf("-1)")
+	query += "-1)"
 	rows, err := c.db.Query(query)
 	if err != nil {
 		return cards, fmt.Errorf("unable to get values: %w", err)
