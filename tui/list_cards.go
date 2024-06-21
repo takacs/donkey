@@ -14,7 +14,7 @@ import (
 
 type ListCardsModel struct {
 	width, height int
-	keys          keyMap
+	keys          listCardKeyMap
 	help          help.Model
 	table         table.Model
 	name          string
@@ -29,7 +29,7 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Exit):
+		case key.Matches(msg, m.keys.MainMenu):
 			return InitProject(m.width, m.height)
 		}
 	}
@@ -59,7 +59,7 @@ func newListCardsModel(width, height int) ListCardsModel {
 		height: height,
 		name:   "list_cards",
 		help:   help.New(),
-		keys:   keys,
+		keys:   listCardKeys,
 		table:  table,
 	}
 }
