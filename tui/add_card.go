@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
+
 	"github.com/takacs/donkey/internal/card"
 	"github.com/takacs/donkey/internal/supermemo"
 )
@@ -24,18 +25,17 @@ const (
 )
 
 var (
-	inputStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(primaryColor))
-	insertedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(secondaryColor))
+	inputStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(primaryColor))
+	messageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(secondaryColor))
 )
 
 type AddCardModel struct {
 	width, height int
 	inputs        []textinput.Model
 	focus         int
-	inserted      string
+	message       string
 	keys          addCardKeyMap
 	help          help.Model
-	name          string
 }
 
 func (m AddCardModel) Init() tea.Cmd {
@@ -48,11 +48,11 @@ func (m AddCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
-			return InitProject(m.width, m.height)
+			return newMainMenuModel(m.width, m.height)
 		case key.Matches(msg, m.keys.Next):
 			m.nextFocus()
 		case key.Matches(msg, m.keys.Submit):
-			m.submitCard()
+			m.message = m.submitCard()
 		}
 	}
 	for i := range m.inputs {
@@ -88,7 +88,7 @@ func (m AddCardModel) View() string {
 		m.inputs[back].View(),
 		inputStyle.Width(formWidth).Render("Deck"),
 		m.inputs[deck].View(),
-		insertedStyle.Render(m.inserted),
+		messageStyle.Render(m.message),
 	)
 
 	helpView := m.help.View(m.keys)
@@ -106,7 +106,10 @@ func (m *AddCardModel) nextFocus() {
 	m.inputs[m.focus].Focus()
 }
 
-func (m *AddCardModel) submitCard() {
+func (m *AddCardModel) submitCard() string {
+	if m.inputs[front].Value() == "" || m.inputs[back].Value() == "" {
+		return "Front and Back are mandatory fields, please fill out to insert!"
+	}
 	carddb, err := card.New()
 	if err != nil {
 		fmt.Println("couldn't open db")
@@ -125,13 +128,12 @@ func (m *AddCardModel) submitCard() {
 	supermemodb.Insert(cardId)
 
 	m.inputs = defaultInputs(0)
-	m.inserted = "Inserted!"
+	return "Inserted!"
 }
 
 func defaultInputs(focus int) []textinput.Model {
 	var inputs []textinput.Model = make([]textinput.Model, 3)
 
-	// TODO this alignment feels like a hack
 	inputs[front] = textinput.New()
 	inputs[front].Placeholder = lipgloss.NewStyle().PaddingRight(formWidth - len("donkey")).Render("donkey")
 	inputs[front].PlaceholderStyle.AlignHorizontal(lipgloss.Left)
@@ -160,13 +162,12 @@ func newAddCardModel(width, height int) AddCardModel {
 	inputs := defaultInputs(focus)
 
 	return AddCardModel{
-		width:    width,
-		height:   height,
-		inputs:   inputs,
-		focus:    focus,
-		inserted: "",
-		name:     "add card",
-		help:     help.New(),
-		keys:     addCardKeys,
+		width:   width,
+		height:  height,
+		inputs:  inputs,
+		focus:   focus,
+		message: "",
+		help:    help.New(),
+		keys:    addCardKeys,
 	}
 }
