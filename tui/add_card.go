@@ -125,7 +125,10 @@ func (m *AddCardModel) submitCard() string {
 		fmt.Println("couldn't open db")
 	}
 	defer supermemodb.Close()
-	supermemodb.Insert(cardId)
+	err = supermemodb.Insert(cardId)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	m.inputs = defaultInputs(0)
 	return "Inserted!"

@@ -68,7 +68,7 @@ func loadFileToDb(path string, deck string, cdb *card.CardDb) error {
 		fields := strings.Split(line, "\t")
 		cardId, err := cdb.Insert(fields[0], fields[1], deck)
 		if err != nil {
-			fmt.Printf("failed importing %v | %v\n", fields[0], fields[1])
+			fmt.Printf("failed importing %v | %v", fields[0], fields[1])
 		} else {
 			fmt.Printf("imported card front: %v | back: %v", fields[0], fields[1])
 		}
