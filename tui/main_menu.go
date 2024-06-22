@@ -38,7 +38,6 @@ func createTable() table.Model {
 		{"Review"},
 		{"Add Card"},
 		{"List Cards"},
-		{"Settings"},
 	}
 	t := table.New(
 		table.WithColumns(columns),
@@ -86,8 +85,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					return model, cmd
 				}
-			case "Settings":
-				return newStatsModel(m.width, m.height), cmd
 			}
 		}
 	}
