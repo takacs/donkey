@@ -22,30 +22,32 @@ Running the `donkey` command after installation reaches the cli. To start the ac
 donkey launch
 ```
 
-### CLI:
-There's some functionality that can be achieved through the cli
+### Card Review
+Cards to be reviewed are provided by a slightly modified version of the [SuperMemo-2 algorithm](https://en.wikipedia.org/wiki/SuperMemo).
 
-- Commands:
-	- `donkey add`
-		- add card to db
-		- flags:
-			- -f front
-			- -b back
-			- -d deck (optional: default)
-	- `donkey list`
-		- list all donkey cards
-	- `donkey delete`
-		- delete donkey cards based on id
-		- args
-			- -id id of card to delete
-	- `donkey where`
-		- show where the db is located on local machine
-	- `donkey launch`
-		- launch the Donkey TUI
-	- `donkey load`
-		- load anki exported file
-		- flags:
-			- -d deck (optional: default)
+### CLI
+There's some functionality that can be achieved through the cli.
+
+- `donkey add`
+	- add card to db
+	- flags:
+		- -f front
+		- -b back
+		- -d deck (optional: default)
+- `donkey list`
+	- list all donkey cards
+- `donkey delete`
+	- delete donkey cards based on id
+	- args
+		- -id id of card to delete
+- `donkey where`
+	- show where the db is located on local machine
+- `donkey launch`
+	- launch the Donkey TUI
+- `donkey load`
+	- load anki exported file
+	- flags:
+		- -d deck (optional: default)
 
 ### Acknowledgments
 Built with [bubbletea](https://github.com/charmbracelet/bubbletea)
