@@ -1,15 +1,29 @@
-<h3 align="center">Donkey</h3>
-<h4 align="center">(d-anki)</h4>
-<h4 align="center">Study in your terminal.<h4>
+<h1 align=center> donkey </h1>
+<p align="center">(d-anki)<p>
+<p align="center">An Anki-like learning app for your terminal.<p>
 <p align="center">
-  <img src="assets/donkey.svg" width=35%/>
+  <img src="assets/donkey.svg" width=20%/>
 </p>
 <p align="center">
   <img src="https://github.com/takacs/donkey/actions/workflows/ci.yml/badge.svg">
 </p>
+<p align="center">
+  <img src="https://github.com/takacs/donkey/assets/44911031/132c1e06-7d91-46cc-bcfd-b05f5d28815d">
+</p>
 
+### Installation
+#### Go
+```
+go install github.com/takacs/donkey@latest
+```
+### Runnning donkey
+Running the `donkey` command after installation reaches the cli. To start the actual app:
+```
+donkey launch
+```
 
-## donkey cli:
+### CLI:
+There's some functionality that can be achieved through the cli
 
 - Commands:
 	- `donkey add`
@@ -32,3 +46,6 @@
 		- load anki exported file
 		- flags:
 			- -d deck (optional: default)
+
+### Acknowledgments
+Built with [bubbletea](https://github.com/charmbracelet/bubbletea)
