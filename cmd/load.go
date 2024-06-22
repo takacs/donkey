@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,36 +37,50 @@ var loadCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		loadFileToDb(args[0], deck, carddb)
+		err = loadFileToDb(args[0], deck, carddb)
+		if err != nil {
+			return err
+		}
 		return nil
 	},
 }
 
-func loadFileToDb(path string, deck string, cdb *card.CardDb) {
+func loadFileToDb(path string, deck string, cdb *card.CardDb) error {
+	if strings.HasSuffix(path, ".apkg") {
+		return errors.New(`.apkg format is not supported as of now. please export deck with Export Format -> Cards in Plain Text and uncheck Include HTML and media references from Anki and try again.`)
+	}
 	file, err := os.Open(filepath.Clean(path))
 	if err != nil {
-		log.Fatalf("failed to open file: %s", err)
+		return err
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
-	var inserted int
+	inserted := 1
 	for scanner.Scan() {
 		line := scanner.Text()
+		fmt.Println(line)
 		if len(line) < 1 || line[0] == '#' {
+			fmt.Printf("couldn't import line %v\n", inserted)
 			continue
 		}
 		fields := strings.Split(line, "\t")
 		cardId, err := cdb.Insert(fields[0], fields[1], deck)
 		if err != nil {
-			log.Printf("failed importing %v | %v", fields[0], fields[1])
+			fmt.Printf("failed importing %v | %v\n", fields[0], fields[1])
+		} else {
+			fmt.Printf("imported card front: %v | back: %v", fields[0], fields[1])
 		}
 		supermemoDb, err := supermemo.New()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("couldn't import line %v\n", inserted)
 		}
-		supermemoDb.Insert(cardId)
+		err = supermemoDb.Insert(cardId)
+		if err != nil {
+			fmt.Printf("couldn't import line %v\n", inserted)
+			continue
+		}
 
 		inserted++
 	}
@@ -74,6 +88,7 @@ func loadFileToDb(path string, deck string, cdb *card.CardDb) {
 	fmt.Printf("inserted %v cards\n", inserted)
 
 	if err := scanner.Err(); err != nil {
-		log.Fatalf("error reading file: %s", err)
+		return err
 	}
+	return err
 }
