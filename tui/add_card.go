@@ -135,14 +135,13 @@ func defaultInputs(focus int) []textinput.Model {
 	var inputs []textinput.Model = make([]textinput.Model, 3)
 
 	inputs[front] = textinput.New()
-	inputs[front].Placeholder = lipgloss.NewStyle().PaddingRight(formWidth - len("donkey")).Render("donkey")
+	inputs[front].Placeholder = lipgloss.NewStyle().PaddingRight(formWidth - len("question")).Render("question")
 	inputs[front].PlaceholderStyle.AlignHorizontal(lipgloss.Left)
 	inputs[front].CharLimit = 1000
 	inputs[front].Width = formWidth
 
 	inputs[back] = textinput.New()
-	inputs[back].Placeholder = "best app ever"
-	inputs[back].Placeholder = lipgloss.NewStyle().PaddingRight(formWidth - len("best app ever")).Render("best app ever")
+	inputs[back].Placeholder = lipgloss.NewStyle().PaddingRight(formWidth - len("answer")).Render("answer")
 	inputs[back].CharLimit = 1000
 	inputs[back].Width = formWidth
 
