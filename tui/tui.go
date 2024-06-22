@@ -22,7 +22,7 @@ func StartTea() error {
 		}()
 	}
 	termWidth, termHeight, _ := term.GetSize(int(os.Stdin.Fd()))
-	m, _ := InitProject(termWidth, termHeight)
+	m, _ := newMainMenuModel(termWidth, termHeight)
 	program := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := program.Run(); err != nil {
 		fmt.Println("Error running program:", err)

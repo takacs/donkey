@@ -16,15 +16,6 @@ type Model struct {
 	table         table.Model
 }
 
-func InitProject(width, height int) (tea.Model, tea.Cmd) {
-	m := Model{
-		width:  width,
-		height: height,
-		table:  createTable(),
-	}
-	return m, func() tea.Msg { return "hi" }
-}
-
 func (m Model) Init() tea.Cmd {
 	return nil
 }
@@ -101,4 +92,13 @@ func (m Model) View() string {
 		lipgloss.Center,
 		baseStyle.Render(m.table.View())+"\n"+m.errorMessage)
 	return style
+}
+
+func newMainMenuModel(width, height int) (tea.Model, tea.Cmd) {
+	m := Model{
+		width:  width,
+		height: height,
+		table:  createTable(),
+	}
+	return m, func() tea.Msg { return "" }
 }

@@ -36,7 +36,7 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
-			return InitProject(m.width, m.height)
+			return newMainMenuModel(m.width, m.height)
 		case key.Matches(msg, m.keys.Space):
 			m.flip = true
 		case key.Matches(msg, m.keys.Easy):
@@ -52,7 +52,7 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if m.currentCard >= m.numberOfCards {
-		return InitProject(m.width, m.height)
+		return newMainMenuModel(m.width, m.height)
 	}
 
 	return m, tea.Batch(cmds...)

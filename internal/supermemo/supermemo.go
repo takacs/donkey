@@ -27,7 +27,6 @@ type SupermemoDb struct {
 }
 
 func (c *SupermemoDb) Insert(cardId uint) {
-	log.Print("hello")
 	_, err := c.db.Exec(
 		"INSERT INTO supermemo(card_id, repetition, easiness_factor, interval, next_review_time) VALUES( ?, ?, ?, ?, ?)",
 		cardId,

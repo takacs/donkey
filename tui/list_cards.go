@@ -1,14 +1,15 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 
-	"errors"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
+
 	"github.com/takacs/donkey/internal/card"
 )
 
@@ -17,7 +18,6 @@ type ListCardsModel struct {
 	keys          listCardKeyMap
 	help          help.Model
 	table         table.Model
-	name          string
 }
 
 func (m ListCardsModel) Init() tea.Cmd {
@@ -30,7 +30,7 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
-			return InitProject(m.width, m.height)
+			return newMainMenuModel(m.width, m.height)
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -46,22 +46,6 @@ func (m ListCardsModel) View() string {
 		lipgloss.Center,
 		lipgloss.Center,
 		baseStyle.Render(m.table.View())+"\n"+helpView)
-}
-
-func newListCardsModel(width, height int) ListCardsModel {
-	table, err := getTableFromCards(width, height)
-	if err != nil {
-		fmt.Printf("%v\n", err)
-	}
-
-	return ListCardsModel{
-		width:  width,
-		height: height,
-		name:   "list_cards",
-		help:   help.New(),
-		keys:   listCardKeys,
-		table:  table,
-	}
 }
 
 func getTableFromCards(width, height int) (table.Model, error) {
@@ -104,4 +88,19 @@ func getTableFromCards(width, height int) (table.Model, error) {
 	t.SetStyles(s)
 
 	return t, nil
+}
+
+func newListCardsModel(width, height int) ListCardsModel {
+	table, err := getTableFromCards(width, height)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+
+	return ListCardsModel{
+		width:  width,
+		height: height,
+		help:   help.New(),
+		keys:   listCardKeys,
+		table:  table,
+	}
 }
