@@ -120,7 +120,7 @@ func (c *SupermemoDb) GetXSoonestReviewTimeCardIds(x int) []uint {
 	}
 
 	var cardId uint
-	cardIds := make([]uint, x)
+	cardIds := []uint{}
 	for rows.Next() {
 		err = rows.Scan(
 			&cardId,

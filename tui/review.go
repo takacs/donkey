@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"log"
 	"strconv"
 
@@ -88,12 +89,21 @@ func (m ReviewModel) View() string {
 		cardView+counter+helpView)
 }
 
-func newReviewModel(width, height, numberOfCards int) ReviewModel {
+func newReviewModel(width, height, numberOfCards int) (ReviewModel, error) {
 	supermemodb, err := supermemo.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 	cardIds := supermemodb.GetXSoonestReviewTimeCardIds(numberOfCards)
+
+	log.Println(cardIds)
+	if len(cardIds) == 0 {
+		log.Println("badbad")
+		return ReviewModel{}, errors.New("no cards to review yet")
+	} else {
+
+		log.Println("goodgood")
+	}
 	// TODO improve init
 	carddb, err := card.New()
 	if err != nil {
@@ -122,7 +132,7 @@ func newReviewModel(width, height, numberOfCards int) ReviewModel {
 		help:          h,
 		keys:          reviewKeys,
 		flip:          false,
-	}
+	}, nil
 }
 
 func (m ReviewModel) addReview(grade review.Grade) {
