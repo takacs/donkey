@@ -2,29 +2,74 @@ package database
 
 import (
 	"database/sql"
+	gap "github.com/muesli/go-app-paths"
 	"log"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
+func TestOpenDb(t *testing.T) {
+	_, err := OpenDb()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGetDbPath(t *testing.T) {
+	path, err := GetDbPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+	scope := gap.NewScope(gap.User, donkeyDbName)
+	dirs, err := scope.DataDirs()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if dirs[0] != path {
+		t.Fatal("wrong path")
+	}
+
+	if _, err := os.Stat(path); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestInitDatabase(t *testing.T) {
-	db := setup()
+	path := filepath.Join(os.TempDir())
+	db, err := InitDatabase(path)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer teardown(db)
 
 	exists := tableExistsInDatabase(cardTable, db)
 	if !exists {
-		log.Fatal("card table wasn't created in db")
+		t.Fatal("card table wasn't created in db")
 	}
 
 	exists = tableExistsInDatabase(reviewTable, db)
 	if !exists {
-		log.Fatal("review table wasn't created in db")
+		t.Fatal("review table wasn't created in db")
 	}
 
 	exists = tableExistsInDatabase(supermemoTable, db)
 	if !exists {
-		log.Fatal("supermemo table wasn't created in db")
+		t.Fatal("supermemo table wasn't created in db")
+	}
+}
+
+func TestInitDataDir(t *testing.T) {
+	path := filepath.Join(os.TempDir())
+	err := initDataDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(path)
+
+	if _, err := os.Stat(path); err != nil {
+		t.Fatal(err)
 	}
 }
 

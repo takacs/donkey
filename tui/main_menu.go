@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"fmt"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
@@ -13,6 +12,7 @@ var secondaryColor = "#abaf74"
 
 type Model struct {
 	width, height int
+	errorMessage  string
 	table         table.Model
 }
 
@@ -80,8 +80,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "List Cards":
 				return newListCardsModel(m.width, m.height), cmd
 			case "Review":
-				return newReviewModel(m.width, m.height, 20), cmd
-			case "Stats":
+				model, err := newReviewModel(m.width, m.height, 20)
+				if err != nil {
+					m.errorMessage = "no cards to review yet!"
+				} else {
+					return model, cmd
+				}
+			case "Settings":
 				return newStatsModel(m.width, m.height), cmd
 			}
 		}
@@ -97,7 +102,6 @@ func (m Model) View() string {
 		m.height,
 		lipgloss.Center-0.02,
 		lipgloss.Center,
-		baseStyle.Render(m.table.View())+"\n")
-	fmt.Printf("%v", style)
+		baseStyle.Render(m.table.View())+"\n"+m.errorMessage)
 	return style
 }

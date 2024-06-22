@@ -14,6 +14,23 @@ const (
 	donkeyDbName = "donkey"
 )
 
+// Opens donkey db with all neccessary tables created
+// If donkey db doesn't exist it this function creates it as well
+func OpenDb() (*sql.DB, error) {
+	path, err := GetDbPath()
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := InitDatabase(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+// Return datadir containing donkey db
 func GetDbPath() (string, error) {
 	scope := gap.NewScope(gap.User, donkeyDbName)
 	dirs, err := scope.DataDirs()
@@ -34,26 +51,10 @@ func GetDbPath() (string, error) {
 	return dir, nil
 }
 
-func OpenDb() (*sql.DB, error) {
-	path, err := GetDbPath()
-	if err != nil {
-		log.Fatal(err)
-	}
-	db, err := InitDatabase(path)
-	if err != nil {
-		log.Fatal("cant get stat")
-	}
-
-	return db, nil
-
-}
-
 func InitDatabase(path string) (*sql.DB, error) {
 	dbPath := filepath.Join(path, donkeyDbName+".db")
 	_, err := os.Stat(dbPath)
 
-	// no error means db exists
-	// we assume it was set up correctly for now
 	if err == nil {
 		db, err := sql.Open("sqlite3", dbPath)
 		if err != nil {
@@ -62,7 +63,6 @@ func InitDatabase(path string) (*sql.DB, error) {
 		return db, nil
 	}
 
-	// if we get a not exists error we init db
 	if os.IsNotExist(err) {
 		db, err := sql.Open("sqlite3", dbPath)
 		if err != nil {
