@@ -26,7 +26,7 @@ type SupermemoDb struct {
 	db *sql.DB
 }
 
-func (c *SupermemoDb) Insert(cardId uint) {
+func (c *SupermemoDb) Insert(cardId uint) error {
 	_, err := c.db.Exec(
 		"INSERT INTO supermemo(card_id, repetition, easiness_factor, interval, next_review_time) VALUES( ?, ?, ?, ?, ?)",
 		cardId,
@@ -36,9 +36,9 @@ func (c *SupermemoDb) Insert(cardId uint) {
 		time.Time{},
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	log.Print("hello")
+	return nil
 }
 
 func (c *SupermemoDb) Delete(id uint) error {
@@ -73,7 +73,10 @@ func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
 
 	if !rows.Next() {
 		log.Printf("inserting card id %v", cardId)
-		c.Insert(cardId)
+		err := c.Insert(cardId)
+		if err != nil {
+			log.Fatal(err)
+		}
 		rows, err = c.db.Query(query)
 		if err != nil {
 			log.Fatal("query error supermemo", cardId)
