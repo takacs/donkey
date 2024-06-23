@@ -11,6 +11,10 @@
   <img src="https://github.com/takacs/donkey/assets/44911031/132c1e06-7d91-46cc-bcfd-b05f5d28815d">
 </p>
 
+### What is Anki?
+
+Anki is an open-source flash card program aimed to help users memorize and recall. For more check out Anki's wikipedia: [Anki (software)](https://en.wikipedia.org/wiki/Anki_(software))
+
 ### Installation
 #### Go
 ```
