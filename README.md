@@ -16,7 +16,7 @@
 ```
 go install github.com/takacs/donkey@latest
 ```
-### Runnning donkey
+### Running donkey
 Running the `donkey` command after installation reaches the cli. To start the actual app:
 ```
 donkey launch
@@ -45,6 +45,7 @@ There's some functionality that can be achieved through the cli.
 - `donkey launch`
 	- launch the Donkey TUI
 - `donkey load`
+	- docs on how to import: https://github.com/takacs/donkey/blob/main/docs/load_cards.md 
 	- load anki exported file
 	- flags:
 		- -d deck (optional: default)
