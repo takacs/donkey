@@ -47,7 +47,7 @@ var loadCmd = &cobra.Command{
 
 func loadFileToDb(path string, deck string, cdb *card.CardDb) error {
 	if strings.HasSuffix(path, ".apkg") {
-		return errors.New(`.apkg format is not supported as of now. please export deck with Export Format -> Cards in Plain Text and uncheck Include HTML and media references from Anki and try again.`)
+		return errors.New(`.apkg format is not supported as of now. please export deck with Export Format -> Cards in Plain Text and uncheck Include HTML and media references from Anki and try again`)
 	}
 	file, err := os.Open(filepath.Clean(path))
 	if err != nil {
