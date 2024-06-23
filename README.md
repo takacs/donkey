@@ -11,9 +11,14 @@
   <img src="https://github.com/takacs/donkey/assets/44911031/132c1e06-7d91-46cc-bcfd-b05f5d28815d">
 </p>
 
-### What is Anki?
+### About
 
-Anki is an open-source flash card program aimed to help users memorize and recall. For more check out Anki's wikipedia: [Anki (software)](https://en.wikipedia.org/wiki/Anki_(software))
+#### What is Anki?
+
+[Anki](https://en.wikipedia.org/wiki/Anki_(software)) is a powerful, cross-platform flashcard application that utilizes spaced repetition to help users memorize information more efficiently. Spaced repetition is a learning technique where information is reviewed at increasing intervals to better commit it to long-term memory. Anki's versatility and rich feature set, such as multimedia support, complex card types, and a wide range of add-ons, make it a popular choice among students, professionals, and lifelong learners.
+
+#### Why donkey?
+Donkey is a simplified, command-line-based flashcard application designed to offer the core benefits of spaced repetition without the complexity and overhead of a full-featured GUI application like Anki.
 
 ### Installation
 #### Go
