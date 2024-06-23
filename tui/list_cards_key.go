@@ -8,16 +8,18 @@ type listCardKeyMap struct {
 	MainMenu key.Binding
 	Down     key.Binding
 	Up       key.Binding
+	Delete   key.Binding
 }
 
 func (k listCardKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Down, k.Up}
+	return []key.Binding{k.Down, k.Up, k.Delete}
 }
 
 func (k listCardKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Down},
 		{k.Up},
+		{k.Delete},
 	}
 }
 
@@ -33,4 +35,8 @@ var listCardKeys = listCardKeyMap{
 	Up: key.NewBinding(
 		key.WithKeys("k", "up"),
 		key.WithHelp("↑/k", "up"),
+	),
+	Delete: key.NewBinding(
+		key.WithKeys("x"),
+		key.WithHelp("x", "delete"),
 	)}

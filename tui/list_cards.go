@@ -3,6 +3,8 @@ package tui
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -11,6 +13,7 @@ import (
 	lipgloss "github.com/charmbracelet/lipgloss"
 
 	"github.com/takacs/donkey/internal/card"
+	"github.com/takacs/donkey/internal/review"
 )
 
 type ListCardsModel struct {
@@ -31,6 +34,12 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
 			return newMainMenuModel(m.width, m.height)
+		case key.Matches(msg, m.keys.Delete):
+			err := m.deleteFocusedCard()
+			if err != nil {
+				log.Println(err)
+				log.Println("delete failed")
+			}
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -48,6 +57,39 @@ func (m ListCardsModel) View() string {
 		baseStyle.Render(m.table.View())+"\n"+helpView)
 }
 
+func (m *ListCardsModel) deleteFocusedCard() error {
+	cardId, err := strconv.Atoi(m.table.SelectedRow()[0])
+	log.Printf("deleting %v", cardId)
+	if err != nil {
+		return err
+	}
+	carddb, err := card.New()
+	if err != nil {
+		return err
+	}
+	err = carddb.Delete(uint(cardId))
+	if err != nil {
+		return err
+	}
+	reviewdb, err := review.New()
+	if err != nil {
+		return err
+	}
+	err = reviewdb.Delete(uint(cardId))
+	if err != nil {
+		return err
+	}
+
+	cursor := m.table.Cursor()
+	m.table, err = getTableFromCards(m.width, m.height)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+	m.table.SetCursor(cursor)
+
+	return nil
+}
+
 func getTableFromCards(width, height int) (table.Model, error) {
 	carddb, err := card.New()
 	if err != nil {
@@ -60,6 +102,7 @@ func getTableFromCards(width, height int) (table.Model, error) {
 
 	// table setup
 	columns := []table.Column{
+		{Title: "ID", Width: int(float32(width) * 0.025)},
 		{Title: "Front", Width: int(float32(width) * 0.425)},
 		{Title: "Back", Width: int(float32(width) * 0.425)},
 		{Title: "Deck", Width: int(float32(width) * 0.05)},
@@ -67,7 +110,8 @@ func getTableFromCards(width, height int) (table.Model, error) {
 
 	rows := []table.Row{}
 	for _, card := range cards {
-		rows = append(rows, table.Row{card.Front, card.Back, card.Deck})
+		idstr := strconv.Itoa(int(card.ID))
+		rows = append(rows, table.Row{idstr, card.Front, card.Back, card.Deck})
 	}
 
 	t := table.New(
