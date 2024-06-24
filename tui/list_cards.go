@@ -37,11 +37,7 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.MainMenu):
-			if m.cardInspect {
-				m.cardInspect = false
-			} else {
-				return newMainMenuModel(m.width, m.height)
-			}
+			return newMainMenuModel(m.width, m.height)
 		case key.Matches(msg, m.keys.Delete):
 			err := m.deleteFocusedCard()
 			if err != nil {
@@ -49,7 +45,7 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				log.Println("delete failed")
 			}
 		case key.Matches(msg, m.keys.Inspect):
-			m.cardInspect = true
+			m.cardInspect = !m.cardInspect
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -63,19 +59,19 @@ func (m ListCardsModel) View() string {
 	bg := baseStyle.Render(m.table.View()) + "\n" + helpView
 	if m.cardInspect {
 		cardOverlay = PlaceOverlay(
-			0, 0,
+			m.width/4, m.height/4,
 			layoutStyle.
 				Copy().
-				Width(m.width/3).
-				Height(m.height/3).
+				Width(m.width/2).
+				Height(m.height/2).
 				AlignHorizontal(lipgloss.Center).
 				AlignVertical(lipgloss.Center).
 				BorderForeground(lipgloss.Color("#209fb5")).
 				Render(
-					m.table.SelectedRow()[1],
+					m.table.SelectedRow()[1]+"\n\n"+m.table.SelectedRow()[2],
 				),
 			bg,
-			true,
+			false,
 		)
 		return lipgloss.Place(
 			m.width,

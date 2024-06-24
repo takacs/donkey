@@ -43,6 +43,6 @@ var listCardKeys = listCardKeyMap{
 		key.WithHelp("x", "delete"),
 	),
 	Inspect: key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "inspect"),
+		key.WithKeys("i"),
+		key.WithHelp("i", "toggle card inspect"),
 	)}
