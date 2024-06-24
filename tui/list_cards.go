@@ -1,67 +1,23 @@
 package tui
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
-	charmansi "github.com/charmbracelet/x/exp/term/ansi"
-	"github.com/mattn/go-runewidth"
-	"github.com/muesli/reflow/ansi"
-	"github.com/muesli/reflow/truncate"
-	"github.com/muesli/termenv"
 
 	"github.com/takacs/donkey/internal/card"
 	"github.com/takacs/donkey/internal/review"
 )
 
-type whitespace struct {
-	chars string
-	style termenv.Style
-}
-
-func (w whitespace) render(width int) string {
-	if w.chars == "" {
-		w.chars = " "
-	}
-
-	r := []rune(w.chars)
-	j := 0
-	b := strings.Builder{}
-
-	// Cycle through runes and print them into the whitespace.
-	for i := 0; i < width; {
-		b.WriteRune(r[j])
-		j++
-		if j >= len(r) {
-			j = 0
-		}
-		i += charmansi.StringWidth(string(r[j]))
-	}
-
-	// Fill any extra gaps white spaces. This might be necessary if any runes
-	// are more than one cell wide, which could leave a one-rune gap.
-	short := width - charmansi.StringWidth(b.String())
-	if short > 0 {
-		b.WriteString(strings.Repeat(" ", short))
-	}
-
-	return w.style.Styled(b.String())
-}
-
-type WhitespaceOption func(*whitespace)
-
 var layoutStyle = lipgloss.NewStyle().
-	Border(lipgloss.RoundedBorder()).
-	AlignVertical(lipgloss.Center)
+	Border(lipgloss.RoundedBorder())
 
 type ListCardsModel struct {
 	width, height int
@@ -104,27 +60,32 @@ func (m ListCardsModel) View() string {
 	helpView := m.help.View(m.keys)
 	cardOverlay := ""
 
+	bg := baseStyle.Render(m.table.View()) + "\n" + helpView
 	if m.cardInspect {
 		cardOverlay = PlaceOverlay(
-			m.width/10,
-			5*m.height/100,
+			0, 0,
 			layoutStyle.
 				Copy().
-				Width(8*m.width/10).
-				Height(90*m.height/100).
+				Width(m.width/3).
+				Height(m.height/3).
 				AlignHorizontal(lipgloss.Center).
+				AlignVertical(lipgloss.Center).
 				BorderForeground(lipgloss.Color("#209fb5")).
 				Render(
-					m.help.View(m.keys),
+					m.table.SelectedRow()[1],
 				),
-			helpView,
+			bg,
+			false,
 		)
+		return cardOverlay
 	}
-	return lipgloss.JoinVertical(
+
+	return lipgloss.Place(
+		m.width,
+		m.height,
 		lipgloss.Center,
-		baseStyle.Render(m.table.View()),
-		helpView,
-		cardOverlay,
+		lipgloss.Center,
+		bg,
 	)
 }
 
@@ -218,115 +179,4 @@ func newListCardsModel(width, height int) ListCardsModel {
 		keys:   listCardKeys,
 		table:  table,
 	}
-}
-
-func PlaceOverlay(x, y int, fg, bg string, opts ...WhitespaceOption) string {
-	fgLines, fgWidth := getLines(fg)
-	bgLines, bgWidth := getLines(bg)
-	bgHeight := len(bgLines)
-	fgHeight := len(fgLines)
-
-	if fgWidth >= bgWidth && fgHeight >= bgHeight {
-		return fg
-	}
-
-	x = clamp(x, 0, bgWidth-fgWidth)
-	y = clamp(y, 0, bgHeight-fgHeight)
-
-	ws := &whitespace{}
-	for _, opt := range opts {
-		opt(ws)
-	}
-
-	var b strings.Builder
-	for i, bgLine := range bgLines {
-		if i > 0 {
-			b.WriteByte('\n')
-		}
-		if i < y || i >= y+fgHeight {
-			b.WriteString(bgLine)
-			continue
-		}
-
-		pos := 0
-		if x > 0 {
-			left := truncate.String(bgLine, uint(x))
-			pos = ansi.PrintableRuneWidth(left)
-			b.WriteString(left)
-			if pos < x {
-				b.WriteString(ws.render(x - pos))
-				pos = x
-			}
-		}
-
-		fgLine := fgLines[i-y]
-		b.WriteString(fgLine)
-		pos += ansi.PrintableRuneWidth(fgLine)
-
-		right := cutLeft(bgLine, pos)
-		bgWidth := ansi.PrintableRuneWidth(bgLine)
-		rightWidth := ansi.PrintableRuneWidth(right)
-		if rightWidth <= bgWidth-pos {
-			b.WriteString(ws.render(bgWidth - rightWidth - pos))
-		}
-
-		b.WriteString(right)
-	}
-
-	return b.String()
-}
-
-func clamp(v, lower, upper int) int {
-	return min(max(v, lower), upper)
-}
-
-func getLines(s string) (lines []string, widest int) {
-	lines = strings.Split(s, "\n")
-
-	for _, l := range lines {
-		w := charmansi.StringWidth(l)
-		if widest < w {
-			widest = w
-		}
-	}
-
-	return lines, widest
-}
-func cutLeft(s string, cutWidth int) string {
-	var (
-		pos    int
-		isAnsi bool
-		ab     bytes.Buffer
-		b      bytes.Buffer
-	)
-	for _, c := range s {
-		var w int
-		if c == ansi.Marker || isAnsi {
-			isAnsi = true
-			ab.WriteRune(c)
-			if ansi.IsTerminator(c) {
-				isAnsi = false
-				if bytes.HasSuffix(ab.Bytes(), []byte("[0m")) {
-					ab.Reset()
-				}
-			}
-		} else {
-			w = runewidth.RuneWidth(c)
-		}
-
-		if pos >= cutWidth {
-			if b.Len() == 0 {
-				if ab.Len() > 0 {
-					b.Write(ab.Bytes())
-				}
-				if pos-cutWidth > 1 {
-					b.WriteByte(' ')
-					continue
-				}
-			}
-			b.WriteRune(c)
-		}
-		pos += w
-	}
-	return b.String()
 }
