@@ -16,11 +16,15 @@ import (
 	"github.com/takacs/donkey/internal/review"
 )
 
+var layoutStyle = lipgloss.NewStyle().
+	Border(lipgloss.RoundedBorder())
+
 type ListCardsModel struct {
 	width, height int
 	keys          listCardKeyMap
 	help          help.Model
 	table         table.Model
+	cardInspect   bool
 }
 
 func (m ListCardsModel) Init() tea.Cmd {
@@ -40,6 +44,8 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				log.Println(err)
 				log.Println("delete failed")
 			}
+		case key.Matches(msg, m.keys.Inspect):
+			m.cardInspect = !m.cardInspect
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -48,13 +54,41 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m ListCardsModel) View() string {
 	helpView := m.help.View(m.keys)
+	cardOverlay := ""
+
+	bg := baseStyle.Render(m.table.View()) + "\n" + helpView
+	if m.cardInspect {
+		cardOverlay = PlaceOverlay(
+			m.width/4, m.height/4,
+			layoutStyle.
+				Copy().
+				Width(m.width/2).
+				Height(m.height/2).
+				AlignHorizontal(lipgloss.Center).
+				AlignVertical(lipgloss.Center).
+				BorderForeground(lipgloss.Color("#209fb5")).
+				Render(
+					m.table.SelectedRow()[1]+"\n\n"+m.table.SelectedRow()[2],
+				),
+			bg,
+			false,
+		)
+		return lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			cardOverlay,
+		)
+	}
 
 	return lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		baseStyle.Render(m.table.View())+"\n"+helpView)
+		bg,
+	)
 }
 
 func (m *ListCardsModel) deleteFocusedCard() error {
