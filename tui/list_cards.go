@@ -75,9 +75,15 @@ func (m ListCardsModel) View() string {
 					m.table.SelectedRow()[1],
 				),
 			bg,
-			false,
+			true,
 		)
-		return cardOverlay
+		return lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			cardOverlay,
+		)
 	}
 
 	return lipgloss.Place(
