@@ -1,6 +1,5 @@
 <h1 align=center> donkey </h1>
-<p align="center">(d-anki)<p>
-<p align="center">An Anki-like learning app for your terminal.<p>
+<p align="center">A flash card memorization app in your terminal.<p>
 <p align="center">
   <img src="assets/donkey.svg" width=20%/>
 </p>
@@ -13,12 +12,7 @@
 
 ### About
 
-#### What is Anki?
-
-[Anki](https://en.wikipedia.org/wiki/Anki_(software)) is a powerful, cross-platform [flashcard](https://en.m.wikipedia.org/wiki/Flashcard) (memorization aid) application that utilizes spaced repetition to help users memorize information more efficiently. Spaced repetition is a learning technique where information is reviewed at increasing intervals to better commit it to long-term memory. Anki's versatility and rich feature set, such as multimedia support, complex card types, and a wide range of add-ons, make it a popular choice among students, professionals, and lifelong learners.
-
-#### Why donkey?
-Donkey is a simplified, terminal-based flashcard application designed to offer the core benefits of spaced repetition without the complexity and overhead of a full-featured GUI application like Anki.
+Donkey is a simplified, terminal-based [flashcard](https://en.m.wikipedia.org/wiki/Flashcard) application designed to offer the core benefits of spaced repetition without the complexity and overhead of a full-featured GUI application like Anki.
 
 ### Installation
 #### Go
