@@ -12,7 +12,7 @@
 
 ### About
 
-Donkey is a simplified, terminal-based [flashcard](https://en.m.wikipedia.org/wiki/Flashcard) application designed to offer the core benefits of spaced repetition without the complexity and overhead of a full-featured GUI application like Anki.
+Donkey is a simplified, terminal-based [flashcard](https://en.m.wikipedia.org/wiki/Flashcard) application designed to offer the core benefits of spaced repetition without the complexity and overhead of a full-featured GUI application like [Anki](https://en.wikipedia.org/wiki/Anki_(software)).
 
 ### Installation
 #### Go
