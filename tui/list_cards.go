@@ -178,10 +178,10 @@ func getTableFromCards(width, height int) (table.Model, error) {
 		return table.Model{}, errors.New("error getting cards")
 	}
 	columns := []table.Column{
-		table.NewColumn(columnKeyId, "ID", int(float32(width)*0.025)).WithFiltered(true),
-		table.NewColumn(columnKeyFront, "Front", int(float32(width)*0.425)).WithFiltered(true),
-		table.NewColumn(columnKeyBack, "Back", int(float32(width)*0.425)).WithFiltered(true),
-		table.NewColumn(columnKeyDeck, "Deck", int(float32(width)*0.05)).WithFiltered(true),
+		table.NewColumn(columnKeyId, "ID", int(float32(width)*0.025)).WithFiltered(true).WithStyle(lipgloss.NewStyle().AlignHorizontal(lipgloss.Left)),
+		table.NewColumn(columnKeyFront, "Front", int(float32(width)*0.425)).WithFiltered(true).WithStyle(lipgloss.NewStyle().AlignHorizontal(lipgloss.Left)),
+		table.NewColumn(columnKeyBack, "Back", int(float32(width)*0.425)).WithFiltered(true).WithStyle(lipgloss.NewStyle().AlignHorizontal(lipgloss.Left)),
+		table.NewColumn(columnKeyDeck, "Deck", int(float32(width)*0.05)).WithFiltered(true).WithStyle(lipgloss.NewStyle().AlignHorizontal(lipgloss.Left)),
 	}
 
 	rows := []table.Row{}
