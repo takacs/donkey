@@ -10,10 +10,12 @@ type listCardKeyMap struct {
 	Up       key.Binding
 	Delete   key.Binding
 	Inspect  key.Binding
+	Search   key.Binding
+	Enter    key.Binding
 }
 
 func (k listCardKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Down, k.Up, k.Delete, k.Inspect}
+	return []key.Binding{k.Down, k.Up, k.Delete, k.Inspect, k.Search, k.Enter}
 }
 
 func (k listCardKeyMap) FullHelp() [][]key.Binding {
@@ -22,6 +24,8 @@ func (k listCardKeyMap) FullHelp() [][]key.Binding {
 		{k.Up},
 		{k.Delete},
 		{k.Inspect},
+		{k.Search},
+		{k.Enter},
 	}
 }
 
@@ -45,4 +49,13 @@ var listCardKeys = listCardKeyMap{
 	Inspect: key.NewBinding(
 		key.WithKeys("i"),
 		key.WithHelp("i", "toggle card inspect"),
-	)}
+	),
+	Search: key.NewBinding(
+		key.WithKeys("s"),
+		key.WithHelp("s", "search"),
+	),
+	Enter: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "exit search"),
+	),
+}

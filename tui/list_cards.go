@@ -83,6 +83,15 @@ func (m ListCardsModel) View() string {
 
 	bg := baseStyle.Render(m.filterTextInput.View()+"\n"+m.table.View()) + "\n" + helpView
 	if m.cardInspect {
+		rowData := m.table.HighlightedRow().Data
+		front, exists := rowData[columnKeyFront]
+		if !exists {
+			front = "missing front"
+		}
+		back, exists := rowData[columnKeyBack]
+		if !exists {
+			back = "missing back"
+		}
 		cardOverlay = PlaceOverlay(
 			m.width/4, m.height/4,
 			layoutStyle.
@@ -93,8 +102,7 @@ func (m ListCardsModel) View() string {
 				AlignVertical(lipgloss.Center).
 				BorderForeground(lipgloss.Color("#209fb5")).
 				Render(
-					//]					m.table.HighlightedRow()+"\n\n"+m.table.HighlightedRow(),
-					"test",
+					front.(string)+"\n\n"+back.(string),
 				),
 			bg,
 			false,
