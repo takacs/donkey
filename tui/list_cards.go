@@ -8,23 +8,32 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
+	"github.com/evertras/bubble-table/table"
 
 	"github.com/takacs/donkey/internal/card"
 	"github.com/takacs/donkey/internal/review"
+)
+
+const (
+	columnKeyId    = "id"
+	columnKeyFront = "front"
+	columnKeyBack  = "back"
+	columnKeyDeck  = "deck"
 )
 
 var layoutStyle = lipgloss.NewStyle().
 	Border(lipgloss.RoundedBorder())
 
 type ListCardsModel struct {
-	width, height int
-	keys          listCardKeyMap
-	help          help.Model
-	table         table.Model
-	cardInspect   bool
+	width, height   int
+	keys            listCardKeyMap
+	help            help.Model
+	table           table.Model
+	filterTextInput textinput.Model
+	cardInspect     bool
 }
 
 func (m ListCardsModel) Init() tea.Cmd {
@@ -33,9 +42,25 @@ func (m ListCardsModel) Init() tea.Cmd {
 
 func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		log.Printf("%v", m.filterTextInput.Focused())
+		if m.filterTextInput.Focused() {
+			if msg.String() == "enter" {
+				log.Printf("%v", msg)
+				m.filterTextInput.Blur()
+			} else {
+				log.Printf("%v", msg)
+				m.filterTextInput, _ = m.filterTextInput.Update(msg)
+			}
+			m.table = m.table.WithFilterInput(m.filterTextInput)
+
+			return m, cmd
+		}
 		switch {
+		case key.Matches(msg, m.keys.Search):
+			m.filterTextInput.Focus()
 		case key.Matches(msg, m.keys.MainMenu):
 			return newMainMenuModel(m.width, m.height)
 		case key.Matches(msg, m.keys.Delete):
@@ -56,7 +81,7 @@ func (m ListCardsModel) View() string {
 	helpView := m.help.View(m.keys)
 	cardOverlay := ""
 
-	bg := baseStyle.Render(m.table.View()) + "\n" + helpView
+	bg := baseStyle.Render(m.filterTextInput.View()+"\n"+m.table.View()) + "\n" + helpView
 	if m.cardInspect {
 		cardOverlay = PlaceOverlay(
 			m.width/4, m.height/4,
@@ -68,7 +93,8 @@ func (m ListCardsModel) View() string {
 				AlignVertical(lipgloss.Center).
 				BorderForeground(lipgloss.Color("#209fb5")).
 				Render(
-					m.table.SelectedRow()[1]+"\n\n"+m.table.SelectedRow()[2],
+					//]					m.table.HighlightedRow()+"\n\n"+m.table.HighlightedRow(),
+					"test",
 				),
 			bg,
 			false,
@@ -92,7 +118,12 @@ func (m ListCardsModel) View() string {
 }
 
 func (m *ListCardsModel) deleteFocusedCard() error {
-	cardId, err := strconv.Atoi(m.table.SelectedRow()[0])
+	rowData := m.table.HighlightedRow().Data
+	id, exists := rowData[columnKeyId]
+	if !exists {
+		return errors.New("no id for row")
+	}
+	cardId, err := strconv.Atoi(id.(string))
 	log.Printf("deleting %v", cardId)
 	if err != nil {
 		return err
@@ -114,12 +145,14 @@ func (m *ListCardsModel) deleteFocusedCard() error {
 		return err
 	}
 
-	cursor := m.table.Cursor()
+	index := m.table.GetHighlightedRowIndex()
 	m.table, err = getTableFromCards(m.width, m.height)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
-	m.table.SetCursor(cursor)
+	m.table.WithFilterInput(m.filterTextInput)
+	log.Printf("setting index to %v", index)
+	m.table.WithHighlightedRow(index)
 
 	return nil
 }
@@ -133,39 +166,35 @@ func getTableFromCards(width, height int) (table.Model, error) {
 	if err != nil {
 		return table.Model{}, errors.New("error getting cards")
 	}
-
-	// table setup
 	columns := []table.Column{
-		{Title: "ID", Width: int(float32(width) * 0.025)},
-		{Title: "Front", Width: int(float32(width) * 0.425)},
-		{Title: "Back", Width: int(float32(width) * 0.425)},
-		{Title: "Deck", Width: int(float32(width) * 0.05)},
+		table.NewColumn(columnKeyId, "ID", int(float32(width)*0.025)).WithFiltered(true),
+		table.NewColumn(columnKeyFront, "Front", int(float32(width)*0.425)).WithFiltered(true),
+		table.NewColumn(columnKeyBack, "Back", int(float32(width)*0.425)).WithFiltered(true),
+		table.NewColumn(columnKeyDeck, "Deck", int(float32(width)*0.05)).WithFiltered(true),
 	}
 
 	rows := []table.Row{}
 	for _, card := range cards {
 		idstr := strconv.Itoa(int(card.ID))
-		rows = append(rows, table.Row{idstr, card.Front, card.Back, card.Deck})
+		rows = append(rows,
+			table.NewRow(table.RowData{
+				columnKeyId:    idstr,
+				columnKeyFront: card.Front,
+				columnKeyBack:  card.Back,
+				columnKeyDeck:  card.Deck,
+			}),
+		)
 	}
 
-	t := table.New(
-		table.WithColumns(columns),
-		table.WithRows(rows),
-		table.WithFocused(true),
-		table.WithHeight(int(float32(height)*0.8)),
-	)
-	s := table.DefaultStyles()
-	s.Header = s.Header.
-		Bold(true).
-		PaddingBottom(1).
-		Foreground(lipgloss.Color(primaryColor))
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("#000000")).
-		Background(lipgloss.Color(secondaryColor)).
-		Bold(false)
-	t.SetStyles(s)
+	table := table.
+		New(columns).
+		Filtered(true).
+		Focused(true).
+		WithFooterVisibility(false).
+		WithPageSize(height - 10).
+		WithRows(rows)
 
-	return t, nil
+	return table, nil
 }
 
 func newListCardsModel(width, height int) ListCardsModel {
@@ -175,10 +204,11 @@ func newListCardsModel(width, height int) ListCardsModel {
 	}
 
 	return ListCardsModel{
-		width:  width,
-		height: height,
-		help:   help.New(),
-		keys:   listCardKeys,
-		table:  table,
+		width:           width,
+		height:          height,
+		help:            help.New(),
+		keys:            listCardKeys,
+		table:           table,
+		filterTextInput: textinput.New(),
 	}
 }
