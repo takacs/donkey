@@ -45,11 +45,12 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		log.Printf("%v", m.filterTextInput.Focused())
 		if m.filterTextInput.Focused() {
 			if msg.String() == "enter" {
 				log.Printf("%v", msg)
 				m.filterTextInput.Blur()
+			} else if key.Matches(msg, m.keys.MainMenu) {
+				return newMainMenuModel(m.width, m.height)
 			} else {
 				log.Printf("%v", msg)
 				m.filterTextInput, _ = m.filterTextInput.Update(msg)
@@ -81,7 +82,7 @@ func (m ListCardsModel) View() string {
 	helpView := m.help.View(m.keys)
 	cardOverlay := ""
 
-	bg := baseStyle.Render(m.filterTextInput.View()+"\n"+m.table.View()) + "\n" + helpView
+	bg := "\n" + baseStyle.Render(m.filterTextInput.View()+"\n"+m.table.View()) + "\n" + helpView
 	if m.cardInspect {
 		rowData := m.table.HighlightedRow().Data
 		front, exists := rowData[columnKeyFront]
@@ -223,6 +224,9 @@ func newListCardsModel(width, height int) ListCardsModel {
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
+	textinput := textinput.New()
+	textinput.PromptStyle.AlignHorizontal(lipgloss.Left)
+	textinput.Placeholder = "press \"s\" to search"
 
 	return ListCardsModel{
 		width:           width,
@@ -230,6 +234,6 @@ func newListCardsModel(width, height int) ListCardsModel {
 		help:            help.New(),
 		keys:            listCardKeys,
 		table:           table,
-		filterTextInput: textinput.New(),
+		filterTextInput: textinput,
 	}
 }
