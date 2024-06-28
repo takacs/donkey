@@ -154,13 +154,15 @@ func (m *ListCardsModel) deleteFocusedCard() error {
 	}
 
 	index := m.table.GetHighlightedRowIndex()
+	page := m.table.CurrentPage()
 	m.table, err = getTableFromCards(m.width, m.height)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
-	m.table.WithFilterInput(m.filterTextInput)
-	log.Printf("setting index to %v", index)
-	m.table.WithHighlightedRow(index)
+	m.table = m.table.
+		WithFilterInput(m.filterTextInput).
+		WithCurrentPage(page).
+		WithHighlightedRow(index)
 
 	return nil
 }
