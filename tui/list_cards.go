@@ -111,7 +111,7 @@ func (m ListCardsModel) View() string {
 			m.width,
 			m.height,
 			lipgloss.Center,
-			lipgloss.Center,
+			lipgloss.Top,
 			cardOverlay,
 		)
 	}
@@ -120,7 +120,7 @@ func (m ListCardsModel) View() string {
 		m.width,
 		m.height,
 		lipgloss.Center,
-		lipgloss.Center,
+		lipgloss.Top,
 		bg,
 	)
 }
@@ -202,7 +202,18 @@ func getTableFromCards(width, height int) (table.Model, error) {
 		Focused(true).
 		WithFooterVisibility(false).
 		WithPageSize(height - 10).
-		WithRows(rows)
+		WithRows(rows).
+		HighlightStyle(lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#000000")).
+			Background(lipgloss.Color(secondaryColor)).
+			Bold(false),
+		).
+		HeaderStyle(
+			lipgloss.NewStyle().
+				Bold(true).
+				PaddingBottom(1).
+				Foreground(lipgloss.Color(primaryColor)),
+		)
 
 	return table, nil
 }
