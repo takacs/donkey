@@ -1,8 +1,8 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
-	"log"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -29,6 +29,8 @@ var (
 	messageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(secondaryColor))
 )
 
+var MissingFieldError = errors.New("Insert failed, Front and Back are mandatory fields!")
+
 type AddCardModel struct {
 	width, height int
 	inputs        []textinput.Model
@@ -52,7 +54,15 @@ func (m AddCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Next):
 			m.nextFocus()
 		case key.Matches(msg, m.keys.Submit):
-			m.message = m.submitCard()
+			err := m.submitCard()
+			if errors.Is(err, MissingFieldError) {
+				m.message = "Insert failed, Front and Back are mandatory fields!"
+				return m, tea.Batch(cmds...)
+			}
+			if err == nil {
+				m.message = "Inserted!"
+				return m, tea.Batch(cmds...)
+			}
 		}
 	}
 	for i := range m.inputs {
@@ -106,32 +116,32 @@ func (m *AddCardModel) nextFocus() {
 	m.inputs[m.focus].Focus()
 }
 
-func (m *AddCardModel) submitCard() string {
+func (m *AddCardModel) submitCard() error {
 	if m.inputs[front].Value() == "" || m.inputs[back].Value() == "" {
-		return "Front and Back are mandatory fields, please fill out to insert!"
+		return MissingFieldError
 	}
 	carddb, err := card.New()
 	if err != nil {
-		fmt.Println("couldn't open db")
+		return err
 	}
 	defer carddb.Close()
 	cardId, err := carddb.Insert(m.inputs[front].Value(), m.inputs[back].Value(), m.inputs[deck].Value())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	supermemodb, err := supermemo.New()
 	if err != nil {
-		fmt.Println("couldn't open db")
+		return err
 	}
 	defer supermemodb.Close()
 	err = supermemodb.Insert(cardId)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	m.inputs = defaultInputs(0)
-	return "Inserted!"
+	return nil
 }
 
 func defaultInputs(focus int) []textinput.Model {
