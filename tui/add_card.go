@@ -29,7 +29,7 @@ var (
 	messageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(secondaryColor))
 )
 
-var MissingFieldError = errors.New("Insert failed, Front and Back are mandatory fields!")
+var ErrMissingField = errors.New("insert failed, Front and Back are mandatory fields!")
 
 type AddCardModel struct {
 	width, height int
@@ -55,7 +55,7 @@ func (m AddCardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.nextFocus()
 		case key.Matches(msg, m.keys.Submit):
 			err := m.submitCard()
-			if errors.Is(err, MissingFieldError) {
+			if errors.Is(err, ErrMissingField) {
 				m.message = "Insert failed, Front and Back are mandatory fields!"
 				return m, tea.Batch(cmds...)
 			}
@@ -118,7 +118,7 @@ func (m *AddCardModel) nextFocus() {
 
 func (m *AddCardModel) submitCard() error {
 	if m.inputs[front].Value() == "" || m.inputs[back].Value() == "" {
-		return MissingFieldError
+		return ErrMissingField
 	}
 	carddb, err := card.New()
 	if err != nil {
