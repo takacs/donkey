@@ -47,12 +47,10 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if m.filterTextInput.Focused() {
 			if msg.String() == "enter" {
-				log.Printf("%v", msg)
 				m.filterTextInput.Blur()
 			} else if key.Matches(msg, m.keys.MainMenu) {
 				return newMainMenuModel(m.width, m.height)
 			} else {
-				log.Printf("%v", msg)
 				m.filterTextInput, _ = m.filterTextInput.Update(msg)
 			}
 			m.table = m.table.WithFilterInput(m.filterTextInput)
@@ -67,8 +65,7 @@ func (m ListCardsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Delete):
 			err := m.deleteFocusedCard()
 			if err != nil {
-				log.Println(err)
-				log.Println("delete failed")
+				return m, cmd
 			}
 		case key.Matches(msg, m.keys.Inspect):
 			m.cardInspect = !m.cardInspect
@@ -222,7 +219,7 @@ func getTableFromCards(width, height int) (table.Model, error) {
 func newListCardsModel(width, height int) ListCardsModel {
 	table, err := getTableFromCards(width, height)
 	if err != nil {
-		fmt.Printf("%v\n", err)
+		log.Println("can't create new model")
 	}
 	textinput := textinput.New()
 	textinput.PromptStyle.AlignHorizontal(lipgloss.Left)

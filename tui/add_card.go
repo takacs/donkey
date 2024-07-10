@@ -29,7 +29,7 @@ var (
 	messageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(secondaryColor))
 )
 
-var ErrMissingField = errors.New("insert failed, Front and Back are mandatory fields!")
+var ErrMissingField = errors.New("insert failed, Front and Back are mandatory fields")
 
 type AddCardModel struct {
 	width, height int
