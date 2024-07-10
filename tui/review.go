@@ -40,13 +40,25 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Space):
 			m.flip = true
 		case key.Matches(msg, m.keys.Easy):
-			m.handleGrade(review.Easy)
+			err := m.handleGrade(review.Easy)
+			if err != nil {
+				return m, tea.Batch(cmds...)
+			}
 		case key.Matches(msg, m.keys.Good):
-			m.handleGrade(review.Good)
+			err := m.handleGrade(review.Good)
+			if err != nil {
+				return m, tea.Batch(cmds...)
+			}
 		case key.Matches(msg, m.keys.Hard):
-			m.handleGrade(review.Hard)
+			err := m.handleGrade(review.Hard)
+			if err != nil {
+				return m, tea.Batch(cmds...)
+			}
 		case key.Matches(msg, m.keys.Again):
-			m.handleGrade(review.Again)
+			err := m.handleGrade(review.Again)
+			if err != nil {
+				return m, tea.Batch(cmds...)
+			}
 		}
 
 	}
