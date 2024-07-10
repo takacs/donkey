@@ -92,7 +92,7 @@ func (m ReviewModel) View() string {
 func newReviewModel(width, height, numberOfCards int) (ReviewModel, error) {
 	supermemodb, err := supermemo.New()
 	if err != nil {
-		log.Fatal(err)
+		return ReviewModel{}, err
 	}
 	cardIds := supermemodb.GetXSoonestReviewTimeCardIds(numberOfCards)
 
@@ -107,12 +107,12 @@ func newReviewModel(width, height, numberOfCards int) (ReviewModel, error) {
 	// TODO improve init
 	carddb, err := card.New()
 	if err != nil {
-		log.Fatal(err)
+		return ReviewModel{}, err
 	}
 
 	cards, err := carddb.GetCardsFromIds(cardIds)
 	if err != nil {
-		log.Fatal(err)
+		return ReviewModel{}, err
 	}
 
 	cardCount := numberOfCards
@@ -146,12 +146,13 @@ func (m ReviewModel) addReview(grade review.Grade) {
 	}
 }
 
-func (m *ReviewModel) handleGrade(grade review.Grade) {
+func (m *ReviewModel) handleGrade(grade review.Grade) error {
 	m.addReview(grade)
 	err := supermemo.UpdateCardParams(m.cards[m.currentCard].ID, grade)
 	if err != nil {
-		log.Fatal(err)
+		return errors.New("can't update card params")
 	}
 	m.flip = false
 	m.currentCard++
+	return nil
 }
