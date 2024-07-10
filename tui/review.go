@@ -106,7 +106,10 @@ func newReviewModel(width, height, numberOfCards int) (ReviewModel, error) {
 	if err != nil {
 		return ReviewModel{}, err
 	}
-	cardIds := supermemodb.GetXSoonestReviewTimeCardIds(numberOfCards)
+	cardIds, err := supermemodb.GetXSoonestReviewTimeCardIds(numberOfCards)
+	if err != nil {
+		return ReviewModel{}, err
+	}
 
 	log.Println(cardIds)
 	if len(cardIds) == 0 {

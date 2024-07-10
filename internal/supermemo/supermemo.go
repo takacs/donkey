@@ -57,6 +57,7 @@ func New() (*SupermemoDb, error) {
 
 func (c *SupermemoDb) Close() error {
 	if err := c.db.Close(); err != nil {
+		return err
 	}
 	return nil
 }
@@ -108,7 +109,7 @@ func (c *SupermemoDb) GetCardsSupermemo(cardId uint) (Supermemo, error) {
 		}
 	}
 	log.Printf("returned %v", supermemo)
-	return supermemo
+	return supermemo, nil
 }
 
 func (c *SupermemoDb) GetXSoonestReviewTimeCardIds(x int) ([]uint, error) {
@@ -157,7 +158,10 @@ func UpdateCardParams(cardId uint, grade review.Grade) error {
 	if err != nil {
 		return err
 	}
-	supermemo := supermemoDb.GetCardsSupermemo(cardId)
+	supermemo, err := supermemoDb.GetCardsSupermemo(cardId)
+	if err != nil {
+		return err
+	}
 	log.Printf("calculating new params for card %v\n", cardId)
 
 	var n int
