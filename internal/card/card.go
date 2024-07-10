@@ -6,7 +6,6 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/takacs/donkey/internal/database"
-	"log"
 	"time"
 )
 

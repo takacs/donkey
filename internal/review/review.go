@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/takacs/donkey/internal/database"
-	"log"
 	"time"
 )
 
@@ -45,7 +44,6 @@ func (c *ReviewDb) Delete(id uint) error {
 func New() (*ReviewDb, error) {
 	db, err := database.OpenDb()
 	if err != nil {
-		log.Fatal("couldn't open db")
 		return nil, errors.New("couldn't open db")
 	}
 	cardDb := ReviewDb{db: db}
@@ -54,7 +52,6 @@ func New() (*ReviewDb, error) {
 
 func (c *ReviewDb) Close() error {
 	if err := c.db.Close(); err != nil {
-		log.Fatal("failed closing db")
 		return errors.New("failed closing db")
 	}
 	return nil
