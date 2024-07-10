@@ -49,7 +49,6 @@ func (c *SupermemoDb) Delete(id uint) error {
 func New() (*SupermemoDb, error) {
 	db, err := database.OpenDb()
 	if err != nil {
-		log.Fatal("couldn't open db")
 		return nil, errors.New("couldn't open db")
 	}
 	supermemoDb := SupermemoDb{db: db}
@@ -58,28 +57,27 @@ func New() (*SupermemoDb, error) {
 
 func (c *SupermemoDb) Close() error {
 	if err := c.db.Close(); err != nil {
-		log.Fatal(err)
 	}
 	return nil
 }
 
-func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
+func (c *SupermemoDb) GetCardsSupermemo(cardId uint) (Supermemo, error) {
 	cardIdStr := strconv.Itoa(int(cardId))
 	query := fmt.Sprintf("SELECT * FROM supermemo WHERE card_id = " + cardIdStr)
 	rows, err := c.db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		return Supermemo{}, err
 	}
 
 	if !rows.Next() {
 		log.Printf("inserting card id %v", cardId)
 		err := c.Insert(cardId)
 		if err != nil {
-			log.Fatal(err)
+			return Supermemo{}, err
 		}
 		rows, err = c.db.Query(query)
 		if err != nil {
-			log.Fatal("query error supermemo", cardId)
+			return Supermemo{}, err
 		}
 	}
 
@@ -113,12 +111,12 @@ func (c *SupermemoDb) GetCardsSupermemo(cardId uint) Supermemo {
 	return supermemo
 }
 
-func (c *SupermemoDb) GetXSoonestReviewTimeCardIds(x int) []uint {
+func (c *SupermemoDb) GetXSoonestReviewTimeCardIds(x int) ([]uint, error) {
 	xStr := strconv.Itoa(x)
 	query := fmt.Sprintf("SELECT card_id FROM supermemo ORDER BY next_review_time LIMIT " + xStr)
 	rows, err := c.db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	var cardId uint
@@ -128,15 +126,15 @@ func (c *SupermemoDb) GetXSoonestReviewTimeCardIds(x int) []uint {
 			&cardId,
 		)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		cardIds = append(cardIds, cardId)
 	}
 
-	return cardIds
+	return cardIds, nil
 }
 
-func (s SupermemoDb) updateSupermemo(supermemoId uint, n, I int, EF float64) {
+func (s SupermemoDb) updateSupermemo(supermemoId uint, n, I int, EF float64) error {
 	interval := time.Hour * 24 * time.Duration(I)
 	nextReviewTime := time.Now().Add(interval)
 	_, err := s.db.Exec(
@@ -148,20 +146,18 @@ func (s SupermemoDb) updateSupermemo(supermemoId uint, n, I int, EF float64) {
 		supermemoId,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("updated %v", supermemoId)
+	return nil
 }
 
 func UpdateCardParams(cardId uint, grade review.Grade) error {
 	supermemoDb, err := New()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	supermemo := supermemoDb.GetCardsSupermemo(cardId)
-	if err != nil {
-		log.Fatal(err)
-	}
 	log.Printf("calculating new params for card %v\n", cardId)
 
 	var n int
