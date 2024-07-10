@@ -40,13 +40,25 @@ func (m ReviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Space):
 			m.flip = true
 		case key.Matches(msg, m.keys.Easy):
-			m.handleGrade(review.Easy)
+			err := m.handleGrade(review.Easy)
+			if err != nil {
+				return m, tea.Batch(cmds...)
+			}
 		case key.Matches(msg, m.keys.Good):
-			m.handleGrade(review.Good)
+			err := m.handleGrade(review.Good)
+			if err != nil {
+				return m, tea.Batch(cmds...)
+			}
 		case key.Matches(msg, m.keys.Hard):
-			m.handleGrade(review.Hard)
+			err := m.handleGrade(review.Hard)
+			if err != nil {
+				return m, tea.Batch(cmds...)
+			}
 		case key.Matches(msg, m.keys.Again):
-			m.handleGrade(review.Again)
+			err := m.handleGrade(review.Again)
+			if err != nil {
+				return m, tea.Batch(cmds...)
+			}
 		}
 
 	}
@@ -92,9 +104,12 @@ func (m ReviewModel) View() string {
 func newReviewModel(width, height, numberOfCards int) (ReviewModel, error) {
 	supermemodb, err := supermemo.New()
 	if err != nil {
-		log.Fatal(err)
+		return ReviewModel{}, err
 	}
-	cardIds := supermemodb.GetXSoonestReviewTimeCardIds(numberOfCards)
+	cardIds, err := supermemodb.GetXSoonestReviewTimeCardIds(numberOfCards)
+	if err != nil {
+		return ReviewModel{}, err
+	}
 
 	log.Println(cardIds)
 	if len(cardIds) == 0 {
@@ -107,12 +122,12 @@ func newReviewModel(width, height, numberOfCards int) (ReviewModel, error) {
 	// TODO improve init
 	carddb, err := card.New()
 	if err != nil {
-		log.Fatal(err)
+		return ReviewModel{}, err
 	}
 
 	cards, err := carddb.GetCardsFromIds(cardIds)
 	if err != nil {
-		log.Fatal(err)
+		return ReviewModel{}, err
 	}
 
 	cardCount := numberOfCards
@@ -146,12 +161,13 @@ func (m ReviewModel) addReview(grade review.Grade) {
 	}
 }
 
-func (m *ReviewModel) handleGrade(grade review.Grade) {
+func (m *ReviewModel) handleGrade(grade review.Grade) error {
 	m.addReview(grade)
 	err := supermemo.UpdateCardParams(m.cards[m.currentCard].ID, grade)
 	if err != nil {
-		log.Fatal(err)
+		return errors.New("can't update card params")
 	}
 	m.flip = false
 	m.currentCard++
+	return nil
 }

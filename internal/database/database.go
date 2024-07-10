@@ -35,7 +35,7 @@ func GetDbPath() (string, error) {
 	scope := gap.NewScope(gap.User, donkeyDbName)
 	dirs, err := scope.DataDirs()
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	var dir string
@@ -46,7 +46,7 @@ func GetDbPath() (string, error) {
 	}
 
 	if err := initDataDir(dir); err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	return dir, nil
 }
@@ -58,7 +58,7 @@ func InitDatabase(path string) (*sql.DB, error) {
 	if err == nil {
 		db, err := sql.Open("sqlite3", dbPath)
 		if err != nil {
-			log.Fatal("can't open db")
+			return &sql.DB{}, err
 		}
 		return db, nil
 	}
@@ -66,7 +66,7 @@ func InitDatabase(path string) (*sql.DB, error) {
 	if os.IsNotExist(err) {
 		db, err := sql.Open("sqlite3", dbPath)
 		if err != nil {
-			log.Fatal("could not create")
+			return &sql.DB{}, err
 		}
 
 		if exists := tableExistsInDatabase(cardTable, db); !exists {
@@ -85,7 +85,8 @@ func InitDatabase(path string) (*sql.DB, error) {
 	}
 
 	// we got an error that is not "not exist" so we return it
-	return nil, err
+	return &sql.DB{}, err
+
 }
 
 func initDataDir(path string) error {

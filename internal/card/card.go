@@ -6,7 +6,6 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/takacs/donkey/internal/database"
-	"log"
 	"time"
 )
 
@@ -37,12 +36,12 @@ func (c *CardDb) Insert(front, back, deck string) (uint, error) {
 		time.Now())
 
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 
 	lastId, err := result.LastInsertId()
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 	return uint(lastId), err
 }
@@ -55,7 +54,6 @@ func (c *CardDb) Delete(id uint) error {
 func New() (*CardDb, error) {
 	db, err := database.OpenDb()
 	if err != nil {
-		log.Fatal("couldn't open db")
 		return nil, errors.New("couldn't open db")
 	}
 	cardDb := CardDb{db: db}
@@ -64,7 +62,6 @@ func New() (*CardDb, error) {
 
 func (c *CardDb) Close() error {
 	if err := c.db.Close(); err != nil {
-		log.Fatal("failed closing db")
 		return errors.New("failed closing db")
 	}
 	return nil
@@ -78,7 +75,7 @@ func (c *CardDb) GetXCards(limit int) ([]Card, error) {
 	}
 	rows, err := c.db.Query(query)
 	if err != nil {
-		return cards, fmt.Errorf("unable to get values: %w", err)
+		return cards, err
 	}
 	for rows.Next() {
 		var card Card
