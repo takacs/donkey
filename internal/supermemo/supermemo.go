@@ -192,7 +192,10 @@ func UpdateCardParams(cardId uint, grade review.Grade) error {
 	}
 	log.Printf("new params: n=%v, I=%v, EF=%v\n", n, I, EF)
 
-	supermemoDb.updateSupermemo(supermemo.ID, n, I, EF)
+	err = supermemoDb.updateSupermemo(supermemo.ID, n, I, EF)
+	if err != nil {
+		return err
+	}
 	return nil
 
 }
